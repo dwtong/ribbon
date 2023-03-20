@@ -2,82 +2,97 @@
 --
 -- a simple text editor
 
-local keyboard = require 'core/keyboard'
+local keyboard = require "core/keyboard"
 
-data = {}
-char_count = 26
-line_count = 6
-line = 1
+MAX_WIDTH = 120
+LINE_COUNT = 6
+
+text = ""
 
 function init()
-  for i=1, line_count do
-    data[i]=""
-  end
-
+  -- text = read_file(_path.code.."ted/test.txt")
   redraw()
 end
 
 function redraw()
+  local baked_lines = lines()
+
   screen.clear()
   screen.level(15)
   screen.font_size(8)
 
-  for i=1, line_count do
+  for i=1, LINE_COUNT do
+    local line = baked_lines[i] or ''
     screen.move(0, 10*i)
-    screen.text(data[i])
+    screen.text(line)
   end
 
   screen.update()
 end
 
--- handler provided by norns core/keyboard.lua library
-function keyboard.code(key, value)
-  -- only do action on key down
-  if (value == 1) then
-    if (key == 'BACKSPACE') then
-      remove_char()
-    elseif (key == 'ENTER') then
-      new_line()
+function read_file(path)
+  local file = io.open(path, "r")
+  if not file then return nil end
+  local content = file:read "*all"
+  file:close()
+  return content
+end
+
+
+function lines()
+  local pos = 1
+  local lines = {[1]=""}
+  local line = 1
+
+  while pos <= text:len() do
+    local char = text:sub(pos, pos)
+    local nline = lines[line]..char
+    local width = screen.text_extents(nline) + 2 
+
+    if char == "\n" then
+      line = line + 1
+      pos = pos + 1
+      lines[line] = ""
+    elseif width > MAX_WIDTH then
+      local br = 1
+
+      while char ~= " " do
+        char = text:sub(pos-br, pos-br)
+        br = br + 1
+      end
+
+      pos = pos - br + 2
+      lines[line] = lines[line]:sub(1, -br)
+      line = line + 1
+      lines[line] = ""
+    else
+      lines[line] = nline
+      pos = pos + 1
     end
+  end
+
+  return lines
+end
+
+function keyboard.code(key, value)
+    if (value == 1) then
+      if (key == 'BACKSPACE') then
+        remove_char()
+      elseif (key == 'ENTER') then
+        text = text .. '\n'
+      end
+
+      redraw()
+    end
+  end
+
+  function keyboard.char(ch)
+    text = text .. ch
 
     redraw()
   end
-end
 
--- handler provided by norns core/keyboard.lua library
-function keyboard.char(ch)
-
-  if (#data[line] > char_count) then
-    -- we have reached the end of the line, go to a new line
-    new_line()
+  function remove_char()
+    text = text:sub(1, -2)
+    -- if (text == nil) then text = '' end
   end
-
-  -- append character 'ch' to current 'line'
-  data[line] = data[line] .. ch
-
-  redraw()
-end
-
-function remove_char()
-  if (#data[line] > 0) then
-    -- backspace current line
-    data[line] = data[line]:sub(1, -2)
-  elseif (line > 1) then
-    -- no more characters on this line, go back to previous line
-    line = line - 1
-  end
-
-  if (data[line] == nil) then
-    -- ensure that the current line is a string, not nil
-    data[line] = ''
-  end
-end
-
-function new_line()
-  if (line < line_count) then
-    print("new line")
-    line = line + 1
-  else
-    print("no more lines to be had - time to implement scrolling!")
-  end
-end

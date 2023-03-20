@@ -6,15 +6,36 @@ local keyboard = require "core/keyboard"
 
 MAX_WIDTH = 120
 LINE_COUNT = 6
+REDRAW_FPS = 30
+KEY_REPEAT_INIT_MS = 200
+KEY_REPEAT_MS = 100
 
 text = ""
+key_repeat_clocks = {}
+screen_dirty = true
+key_actions = {}
+
+key_actions['BACKSPACE'] = function ()
+  text = text:sub(1, -2)
+end
+
+key_actions['ENTER'] = function ()
+  text = text .. '\n'
+end
 
 function init()
   -- text = read_file(_path.code.."ted/test.txt")
-  redraw()
+
+  clock.run(function()
+    while true do
+      if screen_dirty then redraw() end
+      clock.sleep(1/REDRAW_FPS)
+    end
+  end)
 end
 
 function redraw()
+  print('redraw')
   local baked_lines = lines()
 
   screen.clear()
@@ -28,6 +49,7 @@ function redraw()
   end
 
   screen.update()
+  screen_dirty = false
 end
 
 function read_file(path)
@@ -75,24 +97,28 @@ function lines()
 end
 
 function keyboard.code(key, value)
-    if (value == 1) then
-      if (key == 'BACKSPACE') then
-        remove_char()
-      elseif (key == 'ENTER') then
-        text = text .. '\n'
-      end
+  if value == 1 and key_actions[key] then
+    key_repeat_clocks[key] = repeat_key(key)
+  elseif value == 0 and key_repeat_clocks[key] then
+    clock.cancel(key_repeat_clocks[key])
+  end
 
-      redraw()
+  screen_dirty = true
+end
+
+function keyboard.char(ch)
+  text = text .. ch
+  screen_dirty = true
+end
+
+function repeat_key(key)
+  return clock.run(function()
+    key_actions[key]()
+    clock.sleep(KEY_REPEAT_INIT_MS/1000)
+
+    while true do
+      key_actions[key]()
+      clock.sleep(KEY_REPEAT_MS/1000)
     end
-  end
-
-  function keyboard.char(ch)
-    text = text .. ch
-
-    redraw()
-  end
-
-  function remove_char()
-    text = text:sub(1, -2)
-    -- if (text == nil) then text = '' end
-  end
+  end)
+end

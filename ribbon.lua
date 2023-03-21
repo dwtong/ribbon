@@ -1,4 +1,4 @@
---- ted
+--- ribbon
 --
 -- a simple text editor
 
@@ -10,21 +10,21 @@ REDRAW_FPS = 30
 KEY_REPEAT_INIT_MS = 200
 KEY_REPEAT_MS = 100
 
-text = ""
+ribbon = ""
 key_repeat_clocks = {}
 screen_dirty = true
 key_actions = {}
 
 key_actions['BACKSPACE'] = function ()
-  text = text:sub(1, -2)
+  ribbon = ribbon:sub(1, -2)
 end
 
 key_actions['ENTER'] = function ()
-  text = text .. '\n'
+  ribbon = ribbon .. '\n'
 end
 
 function init()
-  -- text = read_file(_path.code.."ted/test.txt")
+  -- ribbon = read_file(_path.code.."ribbon/test.txt")
 
   clock.run(function()
     while true do
@@ -66,8 +66,8 @@ function lines()
   local lines = {[1]=""}
   local line = 1
 
-  while pos <= text:len() do
-    local char = text:sub(pos, pos)
+  while pos <= ribbon:len() do
+    local char = ribbon:sub(pos, pos)
     local nline = lines[line]..char
     local width = screen.text_extents(nline) + 2 
 
@@ -79,7 +79,7 @@ function lines()
       local br = 1
 
       while char ~= " " do
-        char = text:sub(pos-br, pos-br)
+        char = ribbon:sub(pos-br, pos-br)
         br = br + 1
       end
 
@@ -107,7 +107,7 @@ function keyboard.code(key, value)
 end
 
 function keyboard.char(ch)
-  text = text .. ch
+  ribbon = ribbon .. ch
   screen_dirty = true
 end
 

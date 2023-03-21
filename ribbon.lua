@@ -14,6 +14,7 @@ ribbon = ""
 key_repeat_clocks = {}
 screen_dirty = true
 key_actions = {}
+top_line = 1
 
 key_actions['BACKSPACE'] = function ()
   ribbon = ribbon:sub(1, -2)
@@ -23,8 +24,16 @@ key_actions['ENTER'] = function ()
   ribbon = ribbon .. '\n'
 end
 
+key_actions['UP'] = function ()
+  top_line = top_line > 1 and top_line - 1 or 1
+end
+
+key_actions['DOWN'] = function ()
+  top_line = top_line + 1
+end
+
 function init()
-  -- ribbon = read_file(_path.code.."ribbon/test.txt")
+  ribbon = read_file(_path.code.."ribbon/test.txt")
 
   clock.run(function()
     while true do
@@ -34,8 +43,15 @@ function init()
   end)
 end
 
+function enc(e, d)
+  if e == 2 then
+    d = util.clamp(d, -1, 1)
+    top_line = top_line + d > 1 and top_line + d or 1
+    screen_dirty = true
+  end
+end
+
 function redraw()
-  print('redraw')
   local baked_lines = lines()
 
   screen.clear()
@@ -43,7 +59,7 @@ function redraw()
   screen.font_size(8)
 
   for i=1, LINE_COUNT do
-    local line = baked_lines[i] or ''
+    local line = baked_lines[i+top_line] or ''
     screen.move(0, 10*i)
     screen.text(line)
   end

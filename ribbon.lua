@@ -13,7 +13,7 @@ state = {
   keymods = {}
 }
 
-local applys = {}
+local applies = {}
 local reverts = {}
 local past = {}
 local future = {}
@@ -47,7 +47,7 @@ function key(k, v)
   end
 end
 
-function applys.insert(action)
+function applies.insert(action)
   local line = state.lines[action.pos.line]
   local new_line =
     line:sub(1, action.pos.col) .. action.char .. line:sub(action.pos.col + 1)
@@ -65,7 +65,15 @@ function reverts.insert(action)
   state.pos.col = state.pos.col - 1
 end
 
-function applys.newline(action)
+function applies.delete(action)
+  reverts.insert(action)
+end
+
+function reverts.delete(action)
+  applies.insert(action)
+end
+
+function applies.newline(action)
   state.lines[action.line + 1] = ""
   state.pos.line = state.pos.line + 1
   state.pos.col = 1
@@ -80,7 +88,7 @@ function reverts.newline(action)
 end
 
 function apply(action)
-  applys[action.type](action)
+  applies[action.type](action)
   table.insert(past, action)
   redraw()
 end
@@ -115,6 +123,19 @@ function keycodes.ENTER(value)
     exec {
       type =  "newline",
       line = state.pos.line
+    }
+  end
+end
+
+function keycodes.BACKSPACE(value)
+  if value == 1 then
+    local line = state.lines[state.pos.line]
+    local col = state.pos.col - 1
+    local char = line:sub(col, col)
+    exec {
+      type =  "delete",
+      char = char,
+      pos = state.pos
     }
   end
 end

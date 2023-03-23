@@ -57,24 +57,26 @@ function applys.insert(action)
 end
 
 function reverts.insert(action)
-  local char = action.char
-  local pos = action.pos
-  local line = state.lines[pos.line]
+  local line = state.lines[action.pos.line]
   local new_line =
-    line:sub(1, pos.col - 2) .. line:sub(pos.col)
+    line:sub(1, action.pos.col - 2) .. line:sub(action.pos.col)
 
-  state.lines[pos.line] = new_line
+  state.lines[action.pos.line] = new_line
   state.pos.col = state.pos.col - 1
 end
 
 function applys.newline(action)
   state.lines[action.line + 1] = ""
   state.pos.line = state.pos.line + 1
+  state.pos.col = 1
 end
 
 function reverts.newline(action)
   state.lines[action.line + 1] = nil
   state.pos.line = state.pos.line - 1
+
+  local line_len = state.lines[state.pos.line]:len()
+  state.pos.col = line_len + 1
 end
 
 function apply(action)

@@ -6,6 +6,7 @@ local keyboard = require "core/keyboard"
 local applies = {}
 local reverts = {}
 local keycodes = {}
+local clocks = {}
 
 
 local state = {
@@ -14,7 +15,10 @@ local state = {
     col = 1
   },
   lines = {""},
-  keymods = {}
+  keymods = {},
+  cursor = {
+    blink = true
+  }
 }
 
 local history = {
@@ -28,7 +32,7 @@ local keybinds = {
 }
 
 function init()
-  redraw()
+  clock.run(clocks.cursor)
 end
 
 function redraw()
@@ -42,6 +46,18 @@ function redraw()
     screen.text(line)
   end
 
+  local line = state.lines[#state.lines]
+  local text = line:sub(1, state.pos.col)
+  local cursor_x = text_width(text) + 1
+  local cursor_y = 10 * #state.lines - 6
+  local cursor_level = state.cursor.blink and 3 or 0
+
+  screen.level(cursor_level)
+  screen.move(cursor_x, cursor_y)
+  screen.line_width(1)
+  screen.line(cursor_x, cursor_y + 6)
+  screen.stroke()
+
   screen.update()
 end
 
@@ -49,6 +65,19 @@ function key(k, v)
   if v == 1 and k == 2 then
     r()
   end
+end
+
+function text_width(text)
+  local trailing_width = 0
+  local space_width = 3
+  local index = 1
+
+  while index <= text:len() and text:sub(-index, -index) == " " do
+    trailing_width = trailing_width + space_width
+    index = index - 1
+  end
+
+  return screen.text_extents(text) + trailing_width
 end
 
 function applies.insert(action)
@@ -160,6 +189,14 @@ function keyboard.char(char)
       char = char,
       pos = state.pos,
     } 
+  end
+end
+
+function clocks.cursor()
+  while true do
+    state.cursor.blink = not state.cursor.blink
+    redraw()
+    clock.sleep(0.65)
   end
 end
 

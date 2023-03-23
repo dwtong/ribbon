@@ -17,8 +17,11 @@ local applys = {}
 local reverts = {}
 local past = {}
 local future = {}
-local keydowns = {}
-local keyups = {}
+local keycodes = {}
+local keybinds = {
+  CTRL_Z = function() undo() end,
+  CTRL_X = function() redo() end
+}
 
 function init()
   redraw()
@@ -105,58 +108,25 @@ function undo()
   end
 end
 
-
-function keydowns.ENTER()
-  exec {
-    type =  "newline",
-    line = state.pos.line
-  }
-end
-
-function keydowns.CTRL_Z()
-  undo()
-end
-
-function keydowns.CTRL_X()
-  redo()
-end
-
-function keydowns.CTRL()
-  state.keymods.CTRL = true
-end
-
-function keyups.CTRL()
-  state.keymods.CTRL = false
-end
-
-function active_keymods()
-  local keymods = {}
-  for mod, is_active in pairs(state.keymods) do
-    if is_active then
-      table.insert(keymods,mod)
-    end
+function keycodes.ENTER(value)
+  if value == 1 then
+    exec {
+      type =  "newline",
+      line = state.pos.line
+    }
   end
-  return keymods
 end
 
 function keyboard.code(key, value)
-  if value == 1 then
-    local key = key:gsub("LEFT", ""):gsub("RIGHT", "")
-    if keydowns[key] then
-      keydowns[key]()
-    end
-  else
-    if keyups[key] then
-      keyups[key]()
-    end
+  if keycodes[key] then
+    keycodes[key](value)
   end
 end
 
 function keyboard.char(char)
-  if active_keymods() then
-    local keymod = table.concat(active_keymods(), "_")
-    local key = keymod.."_"..char:upper()
-    keydowns[key]()
+  if keyboard.ctrl() then
+    local key = "CTRL_"..char:upper()
+    keybinds[key]()
   else
     exec {
       type = 'insert',
@@ -168,4 +138,5 @@ end
 
 function r()
   norns.script.load(norns.state.script)
+  screen.ping()
 end

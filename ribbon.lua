@@ -3,8 +3,12 @@
 -- a simple text editor
 
 local keyboard = require "core/keyboard"
+local applies = {}
+local reverts = {}
+local keycodes = {}
 
-state = {
+
+local state = {
   pos = {
     line = 1,
     col = 1
@@ -13,11 +17,11 @@ state = {
   keymods = {}
 }
 
-local applies = {}
-local reverts = {}
-local past = {}
-local future = {}
-local keycodes = {}
+local history = {
+  past = {},
+  future = {}
+}
+
 local keybinds = {
   CTRL_Z = function() undo() end,
   CTRL_X = function() redo() end
@@ -89,30 +93,30 @@ end
 
 function apply(action)
   applies[action.type](action)
-  table.insert(past, action)
+  table.insert(history.past, action)
   redraw()
 end
 
 function revert(action)
   reverts[action.type](action)
-  table.insert(future, action)
+  table.insert(history.future, action)
   redraw()
 end
 
 function exec(action)
   apply(action)
-  future = {}
+  history.future = {}
 end
 
 function redo()
-  local action = table.remove(future)
+  local action = table.remove(history.future)
   if action then
     apply(action)
   end
 end
 
 function undo()
-  local action = table.remove(past)
+  local action = table.remove(history.past)
   if action then
     revert(action)
   end

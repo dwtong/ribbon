@@ -42,14 +42,18 @@ function redraw()
   screen.font_size(8)
   for index = 1, #state.lines do
     local line = state.lines[index]
-    screen.move(0, 10 * index)
+    screen.move(1, 10 * index)
     screen.text(line)
   end
 
   local line = state.lines[state.pos.line]
   local text = line:sub(1, state.pos.col - 1)
-  local cursor_x = text_width(text) + 1
+  local cursor_x = 1
   local cursor_y = 10 * state.pos.line - 6
+
+  if state.pos.col > 1 then
+    cursor_x = text_width(text) + 2
+  end
 
   screen.level(state.cursor.level)
   screen.move(cursor_x, cursor_y)

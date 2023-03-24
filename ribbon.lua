@@ -189,17 +189,19 @@ function keycodes.ENTER(value)
 end
 
 function keycodes.BACKSPACE(value)
-  local line = state.lines[state.pos.line]
-  local col = state.pos.col - 1
-  local char = line:sub(col, col)
-  exec {
-    type =  "delete",
-    char = char,
-    pos = {
-      line = state.pos.line,
-      col = state.pos.col
+  if state.pos.col > 1 then
+    local line = state.lines[state.pos.line]
+    local col = state.pos.col - 1
+    local char = line:sub(col, col)
+    exec {
+      type =  "delete",
+      char = char,
+      pos = {
+        line = state.pos.line,
+        col = col
+      }
     }
-  }
+  end
 end
 
 function keycodes.UP(value)

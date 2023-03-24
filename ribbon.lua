@@ -17,7 +17,8 @@ state = {
     col = 1
   },
   cursor = {
-    level = 4
+    level = 4,
+    freeze = false
   }
 }
 
@@ -32,7 +33,7 @@ local keybinds = {
 }
 
 function init()
-  -- state.clocks.cursor = clock.run(clocks.cursor)
+  state.clocks.cursor = clock.run(clocks.cursor)
 end
 
 function redraw()
@@ -75,10 +76,6 @@ function text_width(text)
     trailing_str = text:match("%s+$")
     local trailing_spaces = trailing_str and trailing_str:len() or 0
     local padded_space_px = space_px * (leading_spaces + trailing_spaces)
-
-    print('leading', leading_spaces)
-    print('trailing', trailing_spaces)
-    print('sum', leading_spaces + trailing_spaces)
 
     return text_width_px + padded_space_px
   else
@@ -203,18 +200,22 @@ function keycodes.BACKSPACE(value)
 end
 
 function keycodes.UP(value)
+  state.cursor.freeze = true
   shift_row(-1)
 end
 
 function keycodes.DOWN(value)
+  state.cursor.freeze = true
   shift_row(1)
 end
 
 function keycodes.LEFT(value)
+  state.cursor.freeze = true
   shift_col(-1)
 end
 
 function keycodes.RIGHT(value)
+  state.cursor.freeze = true
   shift_col(1)
 end
 
@@ -239,13 +240,17 @@ end
 
 function clocks.cursor()
   while true do
-    if state.cursor.level > 0 then
+    if state.cursor.freeze then
+      state.cursor.level = 4
+      clock.sleep(0.2)
+      state.cursor.freeze = false
+    elseif state.cursor.level > 0 then
       state.cursor.level = 0
     else
       state.cursor.level = 4
     end
     redraw()
-    clock.sleep(0.45)
+    clock.sleep(0.5)
   end
 end
 

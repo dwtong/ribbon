@@ -8,20 +8,20 @@ local reverts = {}
 local keycodes = {}
 local clocks = {}
 
-
-local state = {
+state = {
+  lines = {""},
+  keymods = {},
+  clocks = {},
   pos = {
     line = 1,
     col = 1
   },
-  lines = {""},
-  keymods = {},
   cursor = {
-    blink = true
+    level = 4
   }
 }
 
-local history = {
+history = {
   past = {},
   future = {}
 }
@@ -32,27 +32,25 @@ local keybinds = {
 }
 
 function init()
-  clock.run(clocks.cursor)
+  state.clocks.cursor = clock.run(clocks.cursor)
 end
 
 function redraw()
   screen.clear()
   screen.level(15)
   screen.font_size(8)
-
   for index = 1, #state.lines do
     local line = state.lines[index]
     screen.move(0, 10 * index)
     screen.text(line)
   end
 
-  local line = state.lines[#state.lines]
-  local text = line:sub(1, state.pos.col)
+  local line = state.lines[state.pos.line]
+  local text = line:sub(1, state.pos.col - 1)
   local cursor_x = text_width(text) + 1
-  local cursor_y = 10 * #state.lines - 6
-  local cursor_level = state.cursor.blink and 3 or 0
+  local cursor_y = 10 * state.pos.line - 6
 
-  screen.level(cursor_level)
+  screen.level(state.cursor.level)
   screen.move(cursor_x, cursor_y)
   screen.line_width(1)
   screen.line(cursor_x, cursor_y + 6)
@@ -69,7 +67,7 @@ end
 
 function text_width(text)
   local trailing_width = 0
-  local space_width = 3
+  local space_width = 4
   local index = 1
 
   while index <= text:len() and text:sub(-index, -index) == " " do
@@ -83,7 +81,7 @@ end
 function applies.insert(action)
   local line = state.lines[action.pos.line]
   local new_line =
-    line:sub(1, action.pos.col) .. action.char .. line:sub(action.pos.col + 1)
+    line:sub(1, action.pos.col - 1) .. action.char .. line:sub(action.pos.col)
 
   state.lines[action.pos.line] = new_line
   state.pos.col = state.pos.col + 1
@@ -151,30 +149,67 @@ function undo()
   end
 end
 
-function keycodes.ENTER(value)
-  if value == 1 then
-    exec {
-      type =  "newline",
-      line = state.pos.line
-    }
+function shift_row(distance)
+  local new_line = state.pos.line + distance
+  local line_len = state.lines[new_line]:len() + 1
+
+  if new_line > 0 and new_line <= #state.lines then
+    state.pos.line = new_line
+
+    if state.pos.col > line_len then
+      state.pos.col = line_len
+    end
+
+    redraw()
   end
+end
+
+function shift_col(distance)
+  local line_len = state.lines[state.pos.line]:len() 
+  local new_col = state.pos.col + distance
+
+  if new_col > 0 and new_col <= line_len + 1 then
+    state.pos.col = new_col
+    redraw()
+  end
+end
+
+function keycodes.ENTER(value)
+  exec {
+    type =  "newline",
+    line = state.pos.line
+  }
 end
 
 function keycodes.BACKSPACE(value)
-  if value == 1 then
-    local line = state.lines[state.pos.line]
-    local col = state.pos.col - 1
-    local char = line:sub(col, col)
-    exec {
-      type =  "delete",
-      char = char,
-      pos = state.pos
-    }
-  end
+  local line = state.lines[state.pos.line]
+  local col = state.pos.col - 1
+  local char = line:sub(col, col)
+  exec {
+    type =  "delete",
+    char = char,
+    pos = state.pos
+  }
+end
+
+function keycodes.UP(value)
+  shift_row(-1)
+end
+
+function keycodes.DOWN(value)
+  shift_row(1)
+end
+
+function keycodes.LEFT(value)
+  shift_col(-1)
+end
+
+function keycodes.RIGHT(value)
+  shift_col(1)
 end
 
 function keyboard.code(key, value)
-  if keycodes[key] then
+  if value == 1 and keycodes[key] then
     keycodes[key](value)
   end
 end
@@ -194,9 +229,13 @@ end
 
 function clocks.cursor()
   while true do
-    state.cursor.blink = not state.cursor.blink
+    if state.cursor.level > 0 then
+      state.cursor.level = 0
+    else
+      state.cursor.level = 4
+    end
     redraw()
-    clock.sleep(0.65)
+    clock.sleep(0.45)
   end
 end
 

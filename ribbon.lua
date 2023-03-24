@@ -32,7 +32,7 @@ local keybinds = {
 }
 
 function init()
-  state.clocks.cursor = clock.run(clocks.cursor)
+  -- state.clocks.cursor = clock.run(clocks.cursor)
 end
 
 function redraw()
@@ -66,16 +66,25 @@ function key(k, v)
 end
 
 function text_width(text)
-  local trailing_width = 0
-  local space_width = 4
-  local index = 1
+  local space_px = 4
+  local text_width_px = screen.text_extents(text)
 
-  while index <= text:len() and text:sub(-index, -index) == " " do
-    trailing_width = trailing_width + space_width
-    index = index - 1
+  if text_width_px > 0 then
+    local leading_str = text:match("^%s+")
+    local leading_spaces = leading_str and leading_str:len() or 0
+    trailing_str = text:match("%s+$")
+    local trailing_spaces = trailing_str and trailing_str:len() or 0
+    local padded_space_px = space_px * (leading_spaces + trailing_spaces)
+
+    print('leading', leading_spaces)
+    print('trailing', trailing_spaces)
+    print('sum', leading_spaces + trailing_spaces)
+
+    return text_width_px + padded_space_px
+  else
+    local space_count = text:len()
+    return space_px * space_count
   end
-
-  return screen.text_extents(text) + trailing_width
 end
 
 function applies.insert(action)
@@ -150,11 +159,12 @@ function undo()
 end
 
 function shift_row(distance)
-  local new_line = state.pos.line + distance
-  local line_len = state.lines[new_line]:len() + 1
+  local new_line_pos = state.pos.line + distance
+  local new_line = state.lines[new_line_pos]
+  local line_len = 1 + (new_line and new_line:len() or 0)
 
-  if new_line > 0 and new_line <= #state.lines then
-    state.pos.line = new_line
+  if new_line_pos > 0 and new_line_pos <= #state.lines then
+    state.pos.line = new_line_pos
 
     if state.pos.col > line_len then
       state.pos.col = line_len

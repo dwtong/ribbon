@@ -90,16 +90,16 @@ function applies.insert(action)
     line:sub(1, action.pos.col - 1) .. action.char .. line:sub(action.pos.col)
 
   state.lines[action.pos.line] = new_line
-  state.pos.col = state.pos.col + 1
+  state.pos.col = action.pos.col + 1
 end
 
 function reverts.insert(action)
   local line = state.lines[action.pos.line]
   local new_line =
-    line:sub(1, action.pos.col - 2) .. line:sub(action.pos.col)
+    line:sub(1, action.pos.col - 1) .. line:sub(action.pos.col + 1)
 
   state.lines[action.pos.line] = new_line
-  state.pos.col = state.pos.col - 1
+  state.pos.col = action.pos.col
 end
 
 function applies.delete(action)
@@ -195,7 +195,10 @@ function keycodes.BACKSPACE(value)
   exec {
     type =  "delete",
     char = char,
-    pos = state.pos
+    pos = {
+      line = state.pos.line,
+      col = state.pos.col
+    }
   }
 end
 
@@ -233,7 +236,10 @@ function keyboard.char(char)
     exec {
       type = 'insert',
       char = char,
-      pos = state.pos,
+      pos = {
+        line = state.pos.line,
+        col = state.pos.col
+      }
     } 
   end
 end

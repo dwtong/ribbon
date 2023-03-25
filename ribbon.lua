@@ -3,6 +3,10 @@
 -- a simple text editor
 
 local keyboard = require "core/keyboard"
+
+local LINE_COUNT = 6
+local SCREEN_WIDTH = 110
+
 local applies = {}
 local reverts = {}
 local keycodes = {}
@@ -40,10 +44,14 @@ function redraw()
   screen.clear()
   screen.level(15)
   screen.font_size(8)
-  for index = 1, #state.lines do
-    local line = state.lines[index]
+
+  local index = 1
+  while index < LINE_COUNT do
+    local line = wrapped_lines(state.lines)[index] or ""
     screen.move(1, 10 * index)
     screen.text(line)
+
+    index = index + 1
   end
 
   local line = state.lines[state.pos.line]
@@ -77,7 +85,7 @@ function text_width(text)
   if text_width_px > 0 then
     local leading_str = text:match("^%s+")
     local leading_spaces = leading_str and leading_str:len() or 0
-    trailing_str = text:match("%s+$")
+    local trailing_str = text:match("%s+$")
     local trailing_spaces = trailing_str and trailing_str:len() or 0
     local padded_space_px = space_px * (leading_spaces + trailing_spaces)
 
@@ -86,6 +94,59 @@ function text_width(text)
     local space_count = text:len()
     return space_px * space_count
   end
+end
+
+function trim_text(text)
+  return text:gsub("^%s+", ""):gsub("%s$", "")
+  -- return text:gsub("^%s*(.-)%s*$", "%1")
+end
+
+function split_line(line)
+  -- local line_has_spaces = line:match("%s")
+  local max = 15 -- for testing
+  local line_width = text_width(line)
+
+  if line_width > SCREEN_WIDTH then
+    local split_at = line:len() - 1
+    local head = line:sub(1, split_at)
+
+    while text_width(head) > SCREEN_WIDTH do
+      -- TODO split at spaces rather than just character position
+      split_at = split_at - 1
+      head = line:sub(1, split_at)
+    end
+
+    local tail = line:sub(split_at + 1)
+    local splits = { head }
+    local tail_splits = split_line(tail)
+
+    for _, split in ipairs(tail_splits) do
+      local trimmed_split = trim_text(split)
+
+      if trimmed_split:len() > 0 then
+        table.insert(splits, trimmed_split)
+      end
+    end
+
+    return splits
+  else
+    return { line }
+  end
+end
+
+function wrapped_lines(lines)
+  local wrapped = {}
+
+  for _, line in ipairs(lines) do
+    local trimmed_line = trim_text(line)
+    local splits = split_line(trimmed_line)
+
+    for _, split in ipairs(splits) do
+      table.insert(wrapped, split)
+    end
+  end
+
+  return wrapped
 end
 
 function applies.insert(action)

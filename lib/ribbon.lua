@@ -22,7 +22,9 @@ ribbon.undo = store.undo
 ribbon.redo = store.redo
 ribbon.keybinds = {}
 
-function ribbon.init() end
+function ribbon.init()
+  clock.run(clocks.cursor)
+end
 
 function ribbon.redraw()
   screen.clear()

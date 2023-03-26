@@ -1,8 +1,6 @@
 local store = {
   state = {
     lines = {""},
-    keymods = {},
-    clocks = {},
     pos = {
       line = 1,
       col = 1

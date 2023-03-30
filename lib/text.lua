@@ -98,7 +98,7 @@ function text.wrap_lines(lines, target_width)
   for line_index = 1, #lines do
     local line = lines[line_index]
     local wrapped_lines = text.split_on_line_wrap(line, target_width)
-    for line_index, wrapped_line in ipairs(wrapped_lines) do
+    for _, wrapped_line in ipairs(wrapped_lines) do
       table.insert(next_lines, wrapped_line)
       local brk = line_index == #wrapped_lines and LINE_BREAK or WRAP_BREAK
       table.insert(next_brks, brk)

@@ -5,11 +5,11 @@ local SCREEN_WIDTH = 110
 local store = {
   state = {
     lines = { "" },
-    brks = { },
+    brks = {},
     keymods = {},
     clocks = {},
     pos = {
-      line = 1,
+      row = 1,
       col = 1
     }
   }
@@ -42,18 +42,18 @@ local function revert(action)
 end
 
 function applies.insert(action)
-  local line = store.state.lines[action.pos.line]
+  local line = store.state.lines[action.pos.row]
   local new_line = text.splice(line, action.char, action.pos.col)
 
-  store.state.lines[action.pos.line] = new_line
   store.state.pos.col = action.pos.col + 1
+  store.state.lines[action.pos.row] = new_line
 end
 
 function reverts.insert(action)
-  local line = store.state.lines[action.pos.line]
+  local line = store.state.lines[action.pos.row]
   local new_line = text.remove(line, action.pos.col)
 
-  store.state.lines[action.pos.line] = new_line
+  store.state.lines[action.pos.row] = new_line
   store.state.pos.col = action.pos.col
 end
 
@@ -67,15 +67,15 @@ end
 
 function applies.newline(action)
   store.state.lines[action.line + 1] = ""
-  store.state.pos.line = store.state.pos.line + 1
+  store.state.pos.row = store.state.pos.row + 1
   store.state.pos.col = 1
 end
 
 function reverts.newline(action)
   store.state.lines[action.line + 1] = nil
-  store.state.pos.line = store.state.pos.line - 1
+  store.state.pos.row = store.state.pos.row - 1
 
-  local line_len = store.state.lines[store.state.pos.line]:len()
+  local line_len = store.state.lines[store.state.pos.row]:len()
   store.state.pos.col = line_len + 1
 end
 

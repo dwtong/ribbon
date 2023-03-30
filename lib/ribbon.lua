@@ -39,10 +39,10 @@ function ribbon.redraw()
     index = index + 1
   end
 
-  local line = state.lines[state.pos.line]
+  local line = state.lines[state.pos.row]
   local text_behind_cursor = line:sub(1, state.pos.col - 1)
   local cursor_x = 1
-  local cursor_y = 10 * state.pos.line - 6
+  local cursor_y = 10 * state.pos.row - 6
 
   if state.pos.col > 1 then
     cursor_x = text.width(text_behind_cursor) + 2
@@ -57,16 +57,14 @@ function ribbon.redraw()
   screen.update()
 end
 
-
-
 function shift_row(distance)
-  local new_line_pos = state.pos.line + distance
+  local new_line_pos = state.pos.row + distance
   local new_line = state.lines[new_line_pos]
   local line_len = 1 + (new_line and new_line:len() or 0)
 
   if new_line_pos > 0 and new_line_pos <= #state.lines then
     -- TODO don't directly mutate state
-    state.pos.line = new_line_pos
+    state.pos.row = new_line_pos
 
     if state.pos.col > line_len then
       -- TODO don't directly mutate state
@@ -78,7 +76,7 @@ function shift_row(distance)
 end
 
 function shift_col(distance)
-  local line_len = state.lines[state.pos.line]:len()
+  local line_len = state.lines[state.pos.row]:len()
   local new_col = state.pos.col + distance
 
   if new_col > 0 and new_col <= line_len + 1 then
@@ -91,21 +89,21 @@ end
 function keycodes.ENTER()
   store.exec {
     type = "newline",
-    line = state.pos.line
+    row = state.pos.row
   }
   redraw()
 end
 
 function keycodes.BACKSPACE()
   if state.pos.col > 1 then
-    local line = state.lines[state.pos.line]
+    local line = state.lines[state.pos.row]
     local col = state.pos.col - 1
     local char = line:sub(col, col)
     store.exec {
       type = "delete",
       char = char,
       pos = {
-        line = state.pos.line,
+        row = state.pos.row,
         col = col
       }
     }
@@ -150,10 +148,10 @@ function ribbon.keychar(char)
     ribbon.keybinds[key]()
   else
     store.exec {
-      type = 'insert',
+      type = "insert",
       char = char,
       pos = {
-        line = state.pos.line,
+        row = state.pos.row,
         col = state.pos.col
       }
     }

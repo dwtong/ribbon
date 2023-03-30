@@ -3,11 +3,9 @@ local ribbon = {}
 local LINE_COUNT = 6
 local SCREEN_WIDTH = 110
 
-local store = include "lib/store"
-local text = include "lib/text"
+local store = include "ribbon/lib/store"
+local text = include "ribbon/lib/text"
 
-local applies = {}
-local reverts = {}
 local keycodes = {}
 local clocks = {}
 local state = store.state
@@ -93,7 +91,7 @@ function shift_row(distance)
 end
 
 function shift_col(distance)
-  local line_len = state.lines[state.pos.line]:len() 
+  local line_len = state.lines[state.pos.line]:len()
   local new_col = state.pos.col + distance
 
   if new_col > 0 and new_col <= line_len + 1 then
@@ -103,21 +101,21 @@ function shift_col(distance)
   end
 end
 
-function keycodes.ENTER(value)
+function keycodes.ENTER()
   store.exec {
-    type =  "newline",
+    type = "newline",
     line = state.pos.line
   }
   redraw()
 end
 
-function keycodes.BACKSPACE(value)
+function keycodes.BACKSPACE()
   if state.pos.col > 1 then
     local line = state.lines[state.pos.line]
     local col = state.pos.col - 1
     local char = line:sub(col, col)
     store.exec {
-      type =  "delete",
+      type = "delete",
       char = char,
       pos = {
         line = state.pos.line,
@@ -130,20 +128,24 @@ end
 
 function keycodes.UP(value)
   cursor.freeze = true
-  shift_row(-1)
+  -- shift_row(-1)
+  store.exec {
+    type = "shiftrow",
+    distance = value
+  }
 end
 
-function keycodes.DOWN(value)
+function keycodes.DOWN()
   cursor.freeze = true
   shift_row(1)
 end
 
-function keycodes.LEFT(value)
+function keycodes.LEFT()
   cursor.freeze = true
   shift_col(-1)
 end
 
-function keycodes.RIGHT(value)
+function keycodes.RIGHT()
   cursor.freeze = true
   shift_col(1)
 end
@@ -157,7 +159,7 @@ end
 
 function ribbon.keychar(char)
   if keyboard.ctrl() then
-    local key = "CTRL_"..char:upper()
+    local key = "CTRL_" .. char:upper()
     ribbon.keybinds[key]()
   else
     store.exec {
@@ -167,7 +169,7 @@ function ribbon.keychar(char)
         line = state.pos.line,
         col = state.pos.col
       }
-    } 
+    }
   end
 
   redraw()

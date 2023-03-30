@@ -29,14 +29,12 @@ end
 
 local function apply(action)
   applies[action.type](action)
-  rewrap_lines()
   -- TODO conditional history
   table.insert(history.past, action)
 end
 
 local function revert(action)
   reverts[action.type](action)
-  rewrap_lines()
   -- TODO conditional history
   table.insert(history.future, action)
 end
@@ -47,6 +45,7 @@ function applies.insert(action)
 
   store.state.pos.col = action.pos.col + 1
   store.state.lines[action.pos.row] = new_line
+  rewrap_lines()
 end
 
 function reverts.insert(action)
@@ -55,20 +54,24 @@ function reverts.insert(action)
 
   store.state.lines[action.pos.row] = new_line
   store.state.pos.col = action.pos.col
+  rewrap_lines()
 end
 
 function applies.delete(action)
   reverts.insert(action)
+  rewrap_lines()
 end
 
 function reverts.delete(action)
   applies.insert(action)
+  rewrap_lines()
 end
 
 function applies.newline(action)
   store.state.lines[action.line + 1] = ""
   store.state.pos.row = store.state.pos.row + 1
   store.state.pos.col = 1
+  rewrap_lines()
 end
 
 function reverts.newline(action)
@@ -77,6 +80,7 @@ function reverts.newline(action)
 
   local line_len = store.state.lines[store.state.pos.row]:len()
   store.state.pos.col = line_len + 1
+  rewrap_lines()
 end
 
 function store.exec(action)

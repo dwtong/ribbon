@@ -1,8 +1,11 @@
 local text = include "ribbon/lib/text"
 
+local SCREEN_WIDTH = 110
+
 local store = {
   state = {
     lines = { "" },
+    brks = { },
     keymods = {},
     clocks = {},
     pos = {
@@ -21,14 +24,19 @@ local history = {
 local applies = {}
 local reverts = {}
 
+local function rewrap_lines()
+end
+
 local function apply(action)
   applies[action.type](action)
+  rewrap_lines()
   -- TODO conditional history
   table.insert(history.past, action)
 end
 
 local function revert(action)
   reverts[action.type](action)
+  rewrap_lines()
   -- TODO conditional history
   table.insert(history.future, action)
 end
@@ -93,6 +101,14 @@ function store.undo()
   if action then
     revert(action)
   end
+end
+
+function rewrap_lines()
+  local lines = store.state.lines
+  local brks = store.state.brks
+  local next_lines, next_brks = text.rewrap_lines(lines, brks, SCREEN_WIDTH)
+  store.state.lines = next_lines
+  store.state.brks = next_brks
 end
 
 return store

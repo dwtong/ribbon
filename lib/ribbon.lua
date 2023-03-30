@@ -32,7 +32,7 @@ function ribbon.redraw()
   local index = 1
   while index < LINE_COUNT do
     -- TODO generate wrapped lines as part of state changes in store
-    local line = wrapped_lines(state.lines)[index] or ""
+    local line = state.lines[index] or ""
     screen.move(1, 10 * index)
     screen.text(line)
 
@@ -57,20 +57,7 @@ function ribbon.redraw()
   screen.update()
 end
 
-function wrapped_lines(lines)
-  local wrapped = {}
 
-  for _, line in ipairs(lines) do
-    local trimmed_line = text.trim(line)
-    local splits = text.split(trimmed_line, SCREEN_WIDTH)
-
-    for _, split in ipairs(splits) do
-      table.insert(wrapped, split)
-    end
-  end
-
-  return wrapped
-end
 
 function shift_row(distance)
   local new_line_pos = state.pos.line + distance

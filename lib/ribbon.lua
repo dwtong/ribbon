@@ -57,35 +57,6 @@ function ribbon.redraw()
   screen.update()
 end
 
-function shift_row(distance)
-  local new_line_pos = state.pos.row + distance
-  local new_line = state.lines[new_line_pos]
-  local line_len = 1 + (new_line and new_line:len() or 0)
-
-  if new_line_pos > 0 and new_line_pos <= #state.lines then
-    -- TODO don't directly mutate state
-    state.pos.row = new_line_pos
-
-    if state.pos.col > line_len then
-      -- TODO don't directly mutate state
-      state.pos.col = line_len
-    end
-
-    redraw()
-  end
-end
-
-function shift_col(distance)
-  local line_len = state.lines[state.pos.row]:len()
-  local new_col = state.pos.col + distance
-
-  if new_col > 0 and new_col <= line_len + 1 then
-    -- TODO don't directly mutate state
-    state.pos.col = new_col
-    redraw()
-  end
-end
-
 function keycodes.ENTER()
   store.exec {
     type = "newline",
@@ -113,26 +84,26 @@ end
 
 function keycodes.UP(value)
   cursor.freeze = true
-  -- shift_row(-1)
-  store.exec {
-    type = "shiftrow",
-    distance = value
-  }
+  -- TODO action for navigation
+  --store.exec {
+  --  type = "shiftrow",
+  --  distance = value
+  --}
 end
 
 function keycodes.DOWN()
   cursor.freeze = true
-  shift_row(1)
+  -- TODO action for navigation
 end
 
 function keycodes.LEFT()
   cursor.freeze = true
-  shift_col(-1)
+  -- TODO action for navigation
 end
 
 function keycodes.RIGHT()
   cursor.freeze = true
-  shift_col(1)
+  -- TODO action for navigation
 end
 
 function ribbon.keycode(key, value)

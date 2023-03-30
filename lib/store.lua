@@ -1,6 +1,10 @@
+local text = include "ribbon/lib/text"
+
 local store = {
   state = {
-    lines = {""},
+    lines = { "" },
+    keymods = {},
+    clocks = {},
     pos = {
       line = 1,
       col = 1
@@ -31,8 +35,7 @@ end
 
 function applies.insert(action)
   local line = store.state.lines[action.pos.line]
-  local new_line =
-    line:sub(1, action.pos.col - 1) .. action.char .. line:sub(action.pos.col)
+  local new_line = text.splice(line, action.char, action.pos.col)
 
   store.state.lines[action.pos.line] = new_line
   store.state.pos.col = action.pos.col + 1
@@ -40,8 +43,7 @@ end
 
 function reverts.insert(action)
   local line = store.state.lines[action.pos.line]
-  local new_line =
-    line:sub(1, action.pos.col - 1) .. line:sub(action.pos.col + 1)
+  local new_line = text.remove(line, action.pos.col)
 
   store.state.lines[action.pos.line] = new_line
   store.state.pos.col = action.pos.col

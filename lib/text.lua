@@ -4,6 +4,14 @@ function text.trim(str)
   return str:gsub("^%s+", ""):gsub("%s$", "")
 end
 
+function text.splice(str, new_str, index)
+  return str:sub(1, index - 1) .. new_str .. str:sub(index)
+end
+
+function text.remove(str, index)
+  return str:sub(1, index - 1) .. str:sub(index + 1)
+end
+
 function text.width(str)
   local space_px = 4
   local text_width_px = screen.text_extents(str)

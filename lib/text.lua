@@ -50,14 +50,22 @@ function text.split_on_line_wrap(str, target_width)
     return { str }
   else
     local head = str
-    local split_at
+    local split_at, target
 
     repeat
       split_at = head:len() - 1
-      local last_space_index = text.last_space_index(head:sub(1, split_at))
-      split_at = last_space_index or split_at
-      head = str:sub(1, split_at)
-    until text.width(head) < target_width
+      local space_string = head:sub(1, split_at - 1)
+      local space_index = text.last_space_index(space_string)
+
+      if space_index then
+        target = target_width + text.width(" ")
+        split_at = space_index
+      else
+        target = target_width
+      end
+
+      head = head:sub(1, split_at)
+    until text.width(head) < target
 
     local tail = str:sub(split_at + 1)
     local splits = { head }
@@ -67,7 +75,6 @@ function text.split_on_line_wrap(str, target_width)
       table.insert(splits, split)
     end
 
-    table.insert(splits, "")
     return splits
   end
 end

@@ -80,19 +80,23 @@ function reverts.delete(action)
 end
 
 function applies.newline(action)
-  -- state.lines[action.line + 1] = ""
-  -- state.pos.row = state.pos.row + 1
-  -- state.pos.col = 1
+  local start_of_line = -state.pos.col + 1
+
+  state.lines[action.row + 1] = ""
+  state.brks[action.row] = text.LINE_BREAK
+
   rewrap_lines()
+  move_pos(start_of_line, 1)
 end
 
 function reverts.newline(action)
-  -- state.lines[action.line + 1] = nil
-  -- state.pos.row = state.pos.row - 1
+  local end_of_prev_line = state.lines[state.pos.row - 1]:len() + 1
 
-  -- local line_len = state.lines[state.pos.row]:len()
-  -- state.pos.col = line_len + 1
+  state.lines[action.row + 1] = nil
+  state.brks[action.row] = nil
+
   rewrap_lines()
+  move_pos(end_of_prev_line, -1)
 end
 
 function rewrap_lines()
@@ -100,7 +104,7 @@ function rewrap_lines()
   local brks = state.brks
   local line = lines[state.pos.row]
 
-  if text.width(line) > SCREEN_WIDTH then
+  if line and text.width(line) > SCREEN_WIDTH then
     local next_lines, next_brks = text.rewrap_lines(lines, brks, SCREEN_WIDTH)
 
     state.lines = next_lines

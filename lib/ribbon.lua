@@ -1,4 +1,4 @@
-local ribbon = {}
+local Ribbon = {}
 
 local LINE_COUNT = 6
 local SCREEN_WIDTH = 110
@@ -16,21 +16,20 @@ local cursor = {
   freeze = false
 }
 
-ribbon.undo = store.undo
-ribbon.redo = store.redo
-ribbon.keybinds = {}
+Ribbon.undo = store.undo
+Ribbon.redo = store.redo
+Ribbon.keybinds = {}
 
-function ribbon.init()
+function Ribbon.init()
   clock.run(clocks.cursor)
 end
 
-function ribbon.redraw()
+function Ribbon.redraw()
   screen.clear()
   screen.level(15)
   screen.font_size(8)
 
   for index = 1, LINE_COUNT do
-    -- TODO generate wrapped lines as part of state changes in store
     local line = state.lines[index] or ""
     screen.move(1, 10 * index)
     screen.text(line)
@@ -57,6 +56,31 @@ function ribbon.redraw()
 
 
   screen.update()
+end
+
+function Ribbon.keycode(key, value)
+  if value == 1 and keycodes[key] then
+    keycodes[key](value)
+    redraw()
+  end
+end
+
+function Ribbon.keychar(char)
+  if keyboard.ctrl() then
+    local key = "CTRL_" .. char:upper()
+    Ribbon.keybinds[key]()
+  else
+    store.exec {
+      type = "insert",
+      char = char,
+      pos = {
+        row = state.pos.row,
+        col = state.pos.col
+      }
+    }
+  end
+
+  redraw()
 end
 
 function keycodes.ENTER()
@@ -108,31 +132,6 @@ function keycodes.RIGHT()
   -- TODO action for navigation
 end
 
-function ribbon.keycode(key, value)
-  if value == 1 and keycodes[key] then
-    keycodes[key](value)
-    redraw()
-  end
-end
-
-function ribbon.keychar(char)
-  if keyboard.ctrl() then
-    local key = "CTRL_" .. char:upper()
-    ribbon.keybinds[key]()
-  else
-    store.exec {
-      type = "insert",
-      char = char,
-      pos = {
-        row = state.pos.row,
-        col = state.pos.col
-      }
-    }
-  end
-
-  redraw()
-end
-
 function clocks.cursor()
   while true do
     if cursor.freeze then
@@ -149,4 +148,4 @@ function clocks.cursor()
   end
 end
 
-return ribbon
+return Ribbon

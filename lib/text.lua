@@ -2,24 +2,24 @@
 local LINE_BREAK = "LINE_BREAK"
 local WRAP_BREAK = "WRAP_BREAK"
 
-local text = {}
+local Text = {}
 
-text.LINE_BREAK = LINE_BREAK
-text.WRAP_BREAK = WRAP_BREAK
+Text.LINE_BREAK = LINE_BREAK
+Text.WRAP_BREAK = WRAP_BREAK
 
-function text.trim(str)
+function Text.trim(str)
   return str:gsub("^%s+", ""):gsub("%s$", "")
 end
 
-function text.splice(str, new_str, index)
+function Text.splice(str, new_str, index)
   return str:sub(1, index - 1) .. new_str .. str:sub(index)
 end
 
-function text.remove(str, index)
+function Text.remove(str, index)
   return str:sub(1, index - 1) .. str:sub(index + 1)
 end
 
-function text.last_space_index(str)
+function Text.last_space_index(str)
   if str:find("%s") == nil then
     return nil
   else
@@ -27,7 +27,7 @@ function text.last_space_index(str)
   end
 end
 
-function text.width(str)
+function Text.width(str)
   local space_px = 4
   local text_width_px = screen.text_extents(str)
 
@@ -45,8 +45,8 @@ function text.width(str)
   end
 end
 
-function text.split_on_line_wrap(str, target_width)
-  if text.width(str) < target_width then
+function Text.split_on_line_wrap(str, target_width)
+  if Text.width(str) <= target_width then
     return { str }
   else
     local head = str
@@ -54,22 +54,23 @@ function text.split_on_line_wrap(str, target_width)
 
     repeat
       split_at = head:len() - 1
-      local space_string = head:sub(1, split_at - 1)
-      local space_index = text.last_space_index(space_string)
+      -- local space_string = head:sub(1, split_at - 1)
+      local space_string = head:sub(1, split_at)
+      local space_index = Text.last_space_index(space_string)
 
       if space_index then
-        target = target_width + text.width(" ")
+        target = target_width + Text.width(" ")
         split_at = space_index
       else
         target = target_width
       end
 
       head = head:sub(1, split_at)
-    until text.width(head) < target
+    until Text.width(head) <= target
 
     local tail = str:sub(split_at + 1)
     local splits = { head }
-    local tail_splits = text.split_on_line_wrap(tail, target_width)
+    local tail_splits = Text.split_on_line_wrap(tail, target_width)
 
     for _, split in ipairs(tail_splits) do
       table.insert(splits, split)
@@ -79,7 +80,7 @@ function text.split_on_line_wrap(str, target_width)
   end
 end
 
-function text.unwrap_lines(lines, brks)
+function Text.unwrap_lines(lines, brks)
   local next_lines = {}
 
   for line_index = 1, #lines do
@@ -97,13 +98,13 @@ function text.unwrap_lines(lines, brks)
   return next_lines
 end
 
-function text.wrap_lines(lines, target_width)
+function Text.wrap_lines(lines, target_width)
   local next_lines = {}
   local next_brks = {}
 
   for line_index = 1, #lines do
     local line = lines[line_index]
-    local wrapped_lines = text.split_on_line_wrap(line, target_width)
+    local wrapped_lines = Text.split_on_line_wrap(line, target_width)
 
     for wrapped_index, wrapped_line in ipairs(wrapped_lines) do
       table.insert(next_lines, wrapped_line)
@@ -119,10 +120,10 @@ function text.wrap_lines(lines, target_width)
   return next_lines, next_brks
 end
 
-function text.rewrap_lines(lines, brks, target_width)
-  local unwrapped_lines = text.unwrap_lines(lines, brks)
-  next_lines, next_brks = text.wrap_lines(unwrapped_lines, target_width)
+function Text.rewrap_lines(lines, brks, target_width)
+  local unwrapped_lines = Text.unwrap_lines(lines, brks)
+  next_lines, next_brks = Text.wrap_lines(unwrapped_lines, target_width)
   return next_lines, next_brks
 end
 
-return text
+return Text

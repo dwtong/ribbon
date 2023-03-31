@@ -1,8 +1,18 @@
 local text = include "ribbon/lib/text"
 
-local SCREEN_WIDTH = 110
+local SCREEN_WIDTH = 124
 
-local store = {}
+local Store = {}
+
+local history = {
+  past = {},
+  future = {}
+}
+
+local applies = {}
+local reverts = {}
+
+local rewrap_lines, move_pos, apply, revert
 
 local state = {
   lines = { "" },
@@ -15,30 +25,30 @@ local state = {
   }
 }
 
-store.state = state
+Store.state = state
 
-local history = {
-  past = {},
-  future = {}
-}
-
--- reducers
-local applies = {}
-local reverts = {}
-
-local function rewrap_lines()
+function Store.exec(action)
+  apply(action)
+  -- TODO conditional history
+  history.future = {}
 end
 
-local function apply(action)
-  applies[action.type](action)
+function Store.redo()
   -- TODO conditional history
-  table.insert(history.past, action)
+  local action = table.remove(history.future)
+
+  if action then
+    apply(action)
+  end
 end
 
-local function revert(action)
-  reverts[action.type](action)
+function Store.undo()
   -- TODO conditional history
-  table.insert(history.future, action)
+  local action = table.remove(history.past)
+
+  if action then
+    revert(action)
+  end
 end
 
 function applies.insert(action)
@@ -56,6 +66,7 @@ function reverts.insert(action)
   local new_line = text.remove(line, action.pos.col)
 
   state.lines[action.pos.row] = new_line
+
   rewrap_lines()
   move_pos(-1, 0)
 end
@@ -84,30 +95,6 @@ function reverts.newline(action)
   rewrap_lines()
 end
 
-function store.exec(action)
-  apply(action)
-  -- TODO conditional history
-  history.future = {}
-end
-
-function store.redo()
-  -- TODO conditional history
-  local action = table.remove(history.future)
-
-  if action then
-    apply(action)
-  end
-end
-
-function store.undo()
-  -- TODO conditional history
-  local action = table.remove(history.past)
-
-  if action then
-    revert(action)
-  end
-end
-
 function rewrap_lines()
   local lines = state.lines
   local brks = state.brks
@@ -115,6 +102,7 @@ function rewrap_lines()
 
   if text.width(line) > SCREEN_WIDTH then
     local next_lines, next_brks = text.rewrap_lines(lines, brks, SCREEN_WIDTH)
+
     state.lines = next_lines
     state.brks = next_brks
   end
@@ -130,12 +118,6 @@ function move_pos(col, row)
   local next_line = state.lines[next_row]
   local next_col = current_col + col
 
-  while next_col > next_line:len() + 1 do
-  -- while next_col <= 1 do
-  --   next_row = next_row - 1
-  --   next_line = state.lines[next_row]
-  --   next_col = next_line:len() + 2 - next_col
-  -- end
   while next_col > next_line:len() + 1 and next_row < #state.lines do
     next_col = next_col - next_line:len()
     next_row = next_row + 1
@@ -146,4 +128,16 @@ function move_pos(col, row)
   state.pos.col = next_col
 end
 
-return store
+function apply(action)
+  applies[action.type](action)
+  -- TODO conditional history
+  table.insert(history.past, action)
+end
+
+function revert(action)
+  reverts[action.type](action)
+  -- TODO conditional history
+  table.insert(history.future, action)
+end
+
+return Store

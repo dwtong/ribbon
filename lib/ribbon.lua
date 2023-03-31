@@ -3,8 +3,8 @@ local ribbon = {}
 local LINE_COUNT = 6
 local SCREEN_WIDTH = 110
 
-local store = include "ribbon/lib/store"
-local text = include "ribbon/lib/text"
+store = include "ribbon/lib/store"
+text = include "ribbon/lib/text"
 
 local keycodes = {}
 local clocks = {}
@@ -29,14 +29,11 @@ function ribbon.redraw()
   screen.level(15)
   screen.font_size(8)
 
-  local index = 1
-  while index < LINE_COUNT do
+  for index = 1, LINE_COUNT do
     -- TODO generate wrapped lines as part of state changes in store
     local line = state.lines[index] or ""
     screen.move(1, 10 * index)
     screen.text(line)
-
-    index = index + 1
   end
 
   local line = state.lines[state.pos.row]
@@ -53,6 +50,11 @@ function ribbon.redraw()
   screen.line_width(1)
   screen.line(cursor_x, cursor_y + 6)
   screen.stroke()
+
+  screen.level(15)
+  screen.move(110, 60)
+  screen.text(state.pos.row .. ":" .. state.pos.col)
+
 
   screen.update()
 end

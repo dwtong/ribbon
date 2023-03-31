@@ -57,16 +57,15 @@ function reverts.insert(action)
 
   state.lines[action.pos.row] = new_line
   rewrap_lines()
+  move_pos(-1, 0)
 end
 
 function applies.delete(action)
   reverts.insert(action)
-  rewrap_lines()
 end
 
 function reverts.delete(action)
   applies.insert(action)
-  rewrap_lines()
 end
 
 function applies.newline(action)
@@ -132,6 +131,12 @@ function move_pos(col, row)
   local next_col = current_col + col
 
   while next_col > next_line:len() + 1 do
+  -- while next_col <= 1 do
+  --   next_row = next_row - 1
+  --   next_line = state.lines[next_row]
+  --   next_col = next_line:len() + 2 - next_col
+  -- end
+  while next_col > next_line:len() + 1 and next_row < #state.lines do
     next_col = next_col - next_line:len()
     next_row = next_row + 1
     next_line = state.lines[next_row]

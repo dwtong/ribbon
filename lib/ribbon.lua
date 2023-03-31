@@ -1,7 +1,6 @@
 local Ribbon = {}
 
 local LINE_COUNT = 6
-local SCREEN_WIDTH = 110
 
 store = include "ribbon/lib/store"
 text = include "ribbon/lib/text"
@@ -59,6 +58,8 @@ function Ribbon.redraw()
 end
 
 function Ribbon.keycode(key, value)
+  screen.ping()
+
   if value == 1 and keycodes[key] then
     keycodes[key](value)
     redraw()

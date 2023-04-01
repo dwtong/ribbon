@@ -133,7 +133,7 @@ function move_pos(col, row)
     next_line = state.lines[next_row]
   end
 
-  while next_col < 1 and next_row > 1 do
+  while next_col < 1 and next_row > 0 do
     next_row = next_row - 1
     next_line = state.lines[next_row]
     next_col = next_line:len() - next_col + 1

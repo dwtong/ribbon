@@ -23,8 +23,6 @@ local rewrap_lines, move_pos
 local state = {
   lines = { "" },
   brks = {},
-  keymods = {},
-  clocks = {},
   pos = {
     row = 1,
     col = 1
@@ -114,6 +112,10 @@ function reverts.newline(action)
   move_pos(line:len(), -1)
 end
 
+function applies.navigate(action)
+  move_pos(action.pos.col, action.pos.row)
+end
+
 function rewrap_lines()
   local lines = state.lines
   local brks = state.brks
@@ -132,7 +134,7 @@ function move_pos(col, row)
   local current_row = state.pos.row
 
   local num_rows = #state.lines
-  local next_row = math.min(current_row + row, num_rows)
+  local next_row = util.clamp(current_row + row, 1, num_rows)
 
   local next_line = state.lines[next_row]
   local next_col = current_col + col

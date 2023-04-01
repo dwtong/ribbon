@@ -119,28 +119,54 @@ function keycodes.BACKSPACE()
   end
 end
 
-function keycodes.UP(value)
+function keycodes.UP()
+  local next_line = state.lines[state.pos.row - 1]
+  local col = next_line:len() - state.pos.col + 1
+
   cursor.freeze = true
-  -- TODO action for navigation
-  --store.exec {
-  --  type = "shiftrow",
-  --  distance = value
-  --}
+  store.exec {
+    type = "navigate",
+    pos = {
+      row = -1,
+      col = col
+    }
+  }
 end
 
 function keycodes.DOWN()
+  local next_line = state.lines[state.pos.row + 1]
+  local col = next_line:len() - state.pos.col + 1
+
   cursor.freeze = true
-  -- TODO action for navigation
+  store.exec {
+    type = "navigate",
+    pos = {
+      row = 1,
+      col = col
+    }
+  }
 end
 
 function keycodes.LEFT()
   cursor.freeze = true
-  -- TODO action for navigation
+  store.exec {
+    type = "navigate",
+    pos = {
+      row = 0,
+      col = -1,
+    }
+  }
 end
 
 function keycodes.RIGHT()
   cursor.freeze = true
-  -- TODO action for navigation
+  store.exec {
+    type = "navigate",
+    pos = {
+      row = 0,
+      col = 1,
+    }
+  }
 end
 
 function clocks.cursor()

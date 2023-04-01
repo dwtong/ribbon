@@ -1,8 +1,8 @@
+local Text = {}
+
 -- constants used as symbols
 local LINE_BREAK = "LINE_BREAK"
 local WRAP_BREAK = "WRAP_BREAK"
-
-local Text = {}
 
 Text.LINE_BREAK = LINE_BREAK
 Text.WRAP_BREAK = WRAP_BREAK

@@ -12,7 +12,13 @@ local history = {
 local applies = {}
 local reverts = {}
 
-local rewrap_lines, move_pos, apply, revert
+local undoable_actions = {
+  delete = true,
+  insert = true,
+  newline = true
+}
+
+local rewrap_lines, move_pos
 
 local state = {
   lines = { "" },
@@ -28,26 +34,29 @@ local state = {
 Store.state = state
 
 function Store.exec(action)
-  apply(action)
-  -- TODO conditional history
-  history.future = {}
+  applies[action.type](action)
+
+  if undoable_actions[action.type] then
+    table.insert(history.past, action)
+    history.future = {}
+  end
 end
 
 function Store.redo()
-  -- TODO conditional history
   local action = table.remove(history.future)
 
   if action then
-    apply(action)
+    applies[action.type](action)
+    table.insert(history.past, action)
   end
 end
 
 function Store.undo()
-  -- TODO conditional history
   local action = table.remove(history.past)
 
   if action then
-    revert(action)
+    reverts[action.type](action)
+    table.insert(history.future, action)
   end
 end
 
@@ -136,18 +145,6 @@ function move_pos(col, row)
 
   state.pos.row = next_row
   state.pos.col = next_col
-end
-
-function apply(action)
-  applies[action.type](action)
-  -- TODO conditional history
-  table.insert(history.past, action)
-end
-
-function revert(action)
-  reverts[action.type](action)
-  -- TODO conditional history
-  table.insert(history.future, action)
 end
 
 return Store

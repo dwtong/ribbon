@@ -81,24 +81,32 @@ function reverts.insert(action)
 end
 
 function applies.delete(action)
-  reverts.insert(action)
+  if action.char == text.LINE_BREAK then
+    reverts.newline(action)
+  else
+    reverts.insert(action)
+  end
 end
 
 function reverts.delete(action)
-  applies.insert(action)
+  if action.char == text.LINE_BREAK then
+    applies.newline(action)
+  else
+    applies.insert(action)
+  end
 end
 
 function applies.newline(action)
-  state.lines[action.row + 1] = ""
-  state.brks[action.row] = text.LINE_BREAK
+  table.insert(state.lines, action.pos.row + 1, "")
+  table.insert(state.brks, action.pos.row, text.LINE_BREAK)
 
   rewrap_lines()
   move_pos(0, 1)
 end
 
 function reverts.newline(action)
-  state.lines[action.row + 1] = nil
-  state.brks[action.row] = nil
+  table.remove(state.lines, action.pos.row + 1)
+  table.remove(state.brks, action.pos.row - 1)
 
   rewrap_lines()
   move_pos(0, -1)

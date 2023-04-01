@@ -87,16 +87,25 @@ end
 function keycodes.ENTER()
   store.exec {
     type = "newline",
-    row = state.pos.row
+    pos = {
+      row = state.pos.row
+    }
   }
   redraw()
 end
 
 function keycodes.BACKSPACE()
   if state.pos.col > 0 then
-    local line = state.lines[state.pos.row]
     local col = state.pos.col - 1
-    local char = line:sub(col, col)
+    local char
+
+    if col == 0 then
+      char = state.brks[state.pos.row - 1]
+    else
+      local line = state.lines[state.pos.row]
+      char = line:sub(col, col)
+    end
+
     store.exec {
       type = "delete",
       char = char,
@@ -105,6 +114,7 @@ function keycodes.BACKSPACE()
         col = col
       }
     }
+
     redraw()
   end
 end

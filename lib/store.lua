@@ -2,6 +2,7 @@ local text = include "ribbon/lib/text"
 
 local SCREEN_WIDTH = 124
 local LINE_COUNT = 6
+local CURSOR_MAX_LEVEL = 4
 
 local Store = {}
 
@@ -31,6 +32,10 @@ local state = {
   screen = {
     top_row = 1,
     line_count = LINE_COUNT
+  },
+  cursor = {
+    freeze = false,
+    level = 4
   }
 }
 
@@ -118,7 +123,22 @@ function reverts.newline(action)
 end
 
 function applies.navigate(action)
+  state.cursor.freeze = true
+  state.cursor.level = CURSOR_MAX_LEVEL
+
   move_pos(action.pos.col, action.pos.row)
+end
+
+function applies.blinkcursor()
+  if state.cursor.level == 0 then
+    state.cursor.level = CURSOR_MAX_LEVEL
+  else
+    state.cursor.level = 0
+  end
+end
+
+function applies.unfreezecursor()
+  state.cursor.freeze = false
 end
 
 function rewrap_lines()

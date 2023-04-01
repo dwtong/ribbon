@@ -91,7 +91,6 @@ function keycodes.UP()
   local next_line = state.lines[state.pos.row - 1]
   local col = next_line:len() - state.pos.col + 1
 
-  cursor.freeze = true
   store.exec {
     type = "navigate",
     pos = {
@@ -105,7 +104,6 @@ function keycodes.DOWN()
   local next_line = state.lines[state.pos.row + 1]
   local col = next_line:len() - state.pos.col + 1
 
-  cursor.freeze = true
   store.exec {
     type = "navigate",
     pos = {
@@ -116,7 +114,6 @@ function keycodes.DOWN()
 end
 
 function keycodes.LEFT()
-  cursor.freeze = true
   store.exec {
     type = "navigate",
     pos = {
@@ -127,7 +124,6 @@ function keycodes.LEFT()
 end
 
 function keycodes.RIGHT()
-  cursor.freeze = true
   store.exec {
     type = "navigate",
     pos = {

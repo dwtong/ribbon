@@ -3,15 +3,10 @@ local View = {}
 store = include "ribbon/lib/store"
 
 local state = store.state
-
--- TODO move to state
-local cursor = {
-  level = 4,
-  freeze = false
-}
+local unfreeze_cursor, blink_cursor, cursor_clock
 
 function View.init()
-  clock.run(cursor.clock)
+  clock.run(cursor_clock)
 end
 
 function View.draw_lines()
@@ -39,7 +34,7 @@ function View.draw_cursor()
     cursor_x = text.width(text_behind_cursor) + 2
   end
 
-  screen.level(cursor.level)
+  screen.level(state.cursor.level)
   screen.move(cursor_x, cursor_y)
   screen.line_width(1)
   screen.line(cursor_x, cursor_y + 6)
@@ -52,21 +47,31 @@ function View.draw_status()
   screen.text(state.pos.row .. ":" .. state.pos.col)
 end
 
-function cursor.clock()
+function cursor_clock()
   while true do
-    if cursor.freeze then
-      cursor.level = 4
+    if state.cursor.freeze then
       clock.sleep(0.2)
-      cursor.freeze = false
-    elseif cursor.level > 0 then
-      cursor.level = 0
+      unfreeze_cursor()
     else
-      cursor.level = 4
+      blink_cursor()
     end
+
     -- TODO screen_dirty
     redraw()
     clock.sleep(0.5)
   end
+end
+
+function unfreeze_cursor()
+  store.exec {
+    type = "unfreezecursor"
+  }
+end
+
+function blink_cursor()
+  store.exec {
+    type = "blinkcursor"
+  }
 end
 
 return View

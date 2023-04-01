@@ -1,6 +1,7 @@
 local text = include "ribbon/lib/text"
 
 local SCREEN_WIDTH = 124
+local LINE_COUNT = 6
 
 local Store = {}
 
@@ -26,6 +27,9 @@ local state = {
   pos = {
     row = 1,
     col = 1
+  },
+  screen = {
+    line_count = LINE_COUNT
   }
 }
 

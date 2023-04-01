@@ -100,6 +100,16 @@ function keycodes.UP()
         col = col
       }
     }
+  elseif state.pos.col > 1 then
+    local col = -state.pos.col + 1
+
+    store.exec {
+      type = "navigate",
+      pos = {
+        row = 0,
+        col = col
+      }
+    }
   end
 end
 

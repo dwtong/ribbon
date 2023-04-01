@@ -27,8 +27,9 @@ end
 function View.draw_cursor()
   local line = state.lines[state.pos.row]
   local text_behind_cursor = line:sub(1, state.pos.col - 1)
+  local relative_row = state.pos.row - state.screen.top_row + 1
   local cursor_x = 1
-  local cursor_y = 10 * state.pos.row - 6
+  local cursor_y = 10 * relative_row - 6
 
   if state.pos.col > 1 then
     cursor_x = text.width(text_behind_cursor) + 2

@@ -105,11 +105,13 @@ function applies.newline(action)
 end
 
 function reverts.newline(action)
-  table.remove(state.lines, action.pos.row + 1)
+  local line = state.lines[action.pos.row - 1]
+
+  table.remove(state.lines, action.pos.row)
   table.remove(state.brks, action.pos.row - 1)
 
   rewrap_lines()
-  move_pos(0, -1)
+  move_pos(line:len(), -1)
 end
 
 function rewrap_lines()

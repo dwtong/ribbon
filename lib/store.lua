@@ -80,23 +80,19 @@ function reverts.delete(action)
 end
 
 function applies.newline(action)
-  local start_of_line = -state.pos.col + 1
-
   state.lines[action.row + 1] = ""
   state.brks[action.row] = text.LINE_BREAK
 
   rewrap_lines()
-  move_pos(start_of_line, 1)
+  move_pos(0, 1)
 end
 
 function reverts.newline(action)
-  local end_of_prev_line = state.lines[state.pos.row - 1]:len() + 1
-
   state.lines[action.row + 1] = nil
   state.brks[action.row] = nil
 
   rewrap_lines()
-  move_pos(end_of_prev_line, -1)
+  move_pos(0, -1)
 end
 
 function rewrap_lines()
@@ -126,6 +122,16 @@ function move_pos(col, row)
     next_col = next_col - next_line:len()
     next_row = next_row + 1
     next_line = state.lines[next_row]
+  end
+
+  while next_col < 1 and next_row > 1 do
+    next_row = next_row - 1
+    next_line = state.lines[next_row]
+    next_col = next_line:len() - next_col + 1
+  end
+
+  if next_col > next_line:len() + 1 then
+    next_col = next_line:len() + 1
   end
 
   state.pos.row = next_row

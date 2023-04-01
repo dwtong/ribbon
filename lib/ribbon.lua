@@ -93,7 +93,7 @@ function keycodes.ENTER()
 end
 
 function keycodes.BACKSPACE()
-  if state.pos.col > 1 then
+  if state.pos.col > 0 then
     local line = state.lines[state.pos.row]
     local col = state.pos.col - 1
     local char = line:sub(col, col)

@@ -21,7 +21,9 @@ function View.draw_lines()
   screen.font_size(8)
 
   for index = 1, line_count do
-    local line = state.lines[index] or ""
+    local line_index = index + state.screen.top_row - 1
+    local line = state.lines[line_index] or ""
+
     screen.move(1, 10 * index)
     screen.text(line)
   end

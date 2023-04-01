@@ -29,6 +29,7 @@ local state = {
     col = 1
   },
   screen = {
+    top_row = 1,
     line_count = LINE_COUNT
   }
 }
@@ -137,6 +138,9 @@ function move_pos(col, row)
   local current_col = state.pos.col
   local current_row = state.pos.row
 
+  local top_row = state.screen.top_row
+  local bottom_row = top_row + LINE_COUNT - 1
+
   local num_rows = #state.lines
   local next_row = util.clamp(current_row + row, 1, num_rows)
 
@@ -161,6 +165,12 @@ function move_pos(col, row)
 
   state.pos.row = next_row
   state.pos.col = next_col
+
+  if next_row > bottom_row and bottom_row < num_rows then
+    state.screen.top_row = top_row + 1
+  elseif next_row < top_row and top_row > 1 then
+    state.screen.top_row = top_row - 1
+  end
 end
 
 return Store

@@ -62,15 +62,15 @@ function cursor_clock()
 end
 
 function unfreeze_cursor()
-  store.exec {
+  store.exec({
     type = "unfreezecursor"
-  }
+  })
 end
 
 function blink_cursor()
-  store.exec {
+  store.exec({
     type = "blinkcursor"
-  }
+  })
 end
 
 return View

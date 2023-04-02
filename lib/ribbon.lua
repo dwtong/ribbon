@@ -41,25 +41,25 @@ function Ribbon.keychar(char)
     local key = "CTRL_" .. char:upper()
     Ribbon.keybinds[key]()
   else
-    store.exec {
+    store.exec({
       type = "insert",
       char = char,
       pos = {
         row = state.pos.row,
         col = state.pos.col
       }
-    }
+    })
   end
 end
 
 function keycodes.ENTER()
-  store.exec {
+  store.exec({
     type = "newline",
     pos = {
       row = state.pos.row,
       col = state.pos.col
     }
-  }
+  })
 end
 
 function keycodes.BACKSPACE()
@@ -82,14 +82,14 @@ function keycodes.BACKSPACE()
       char = line:sub(new_col, new_col)
     end
 
-    store.exec {
+    store.exec({
       type = "delete",
       char = char,
       pos = {
         row = new_row,
         col = new_col
       }
-    }
+    })
   end
 end
 
@@ -99,23 +99,23 @@ function keycodes.UP()
   if next_line then
     local col = next_line:len() - state.pos.col + 1
 
-    store.exec {
+    store.exec({
       type = "navigate",
       pos = {
         row = -1,
         col = col
       }
-    }
+    })
   elseif state.pos.col > 1 then
     local col = -state.pos.col + 1
 
-    store.exec {
+    store.exec({
       type = "navigate",
       pos = {
         row = 0,
         col = col
       }
-    }
+    })
   end
 end
 
@@ -125,34 +125,34 @@ function keycodes.DOWN()
   if next_line then
     local col = next_line:len() - state.pos.col + 1
 
-    store.exec {
+    store.exec({
       type = "navigate",
       pos = {
         row = 1,
         col = col
       }
-    }
+    })
   end
 end
 
 function keycodes.LEFT()
-  store.exec {
+  store.exec({
     type = "navigate",
     pos = {
       row = 0,
       col = -1,
     }
-  }
+  })
 end
 
 function keycodes.RIGHT()
-  store.exec {
+  store.exec({
     type = "navigate",
     pos = {
       row = 0,
       col = 1,
     }
-  }
+  })
 end
 
 return Ribbon

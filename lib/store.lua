@@ -83,6 +83,8 @@ function reverts.insert(action)
   local new_line = text.remove(line, action.pos.col)
 
   state.lines[action.pos.row] = new_line
+  state.pos.col = action.pos.col + 1
+  state.pos.row = action.pos.row
 
   rewrap_lines()
   move_pos(-1, 0)

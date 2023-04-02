@@ -20,7 +20,8 @@ local undoable_actions = {
   newline = true
 }
 
-local rewrap_lines, move_pos, call_event_listeners
+local rewrap_lines, move_pos, set_visible_rows
+local call_event_listeners
 
 local event_listeners = {
   onchange = {}
@@ -185,14 +186,13 @@ end
 function jump_to_pos(col, row)
   state.pos.col = col
   state.pos.row = row
+
+  set_visible_rows()
 end
 
 function move_pos(col, row)
   local current_col = state.pos.col
   local current_row = state.pos.row
-
-  local top_row = state.screen.top_row
-  local bottom_row = top_row + LINE_COUNT - 1
 
   local num_rows = #state.lines
   local next_row = util.clamp(current_row + row, 1, num_rows)
@@ -218,6 +218,15 @@ function move_pos(col, row)
 
   state.pos.row = next_row
   state.pos.col = next_col
+
+  set_visible_rows()
+end
+
+function set_visible_rows()
+  local top_row = state.screen.top_row
+  local bottom_row = top_row + LINE_COUNT - 1
+  local next_row = state.pos.row
+  local num_rows = #state.lines
 
   if next_row > bottom_row and bottom_row < num_rows then
     state.screen.top_row = top_row + 1

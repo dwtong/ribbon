@@ -137,14 +137,14 @@ function applies.newline(action)
 end
 
 function reverts.newline(action)
-  local line_start = state.lines[action.pos.row - 1]
-  local line_end = state.lines[action.pos.row]
+  local next_row = action.pos.row
+  local line_start = state.lines[next_row]
+  local line_end = state.lines[next_row + 1]
   local next_col = line_start:len() + 1
-  local next_row = action.pos.row - 1
 
   state.lines[next_row] = line_start .. line_end
 
-  table.remove(state.lines, action.pos.row)
+  table.remove(state.lines, next_row + 1)
   table.remove(state.brks, next_row)
 
   jump_to_pos(next_col, next_row)

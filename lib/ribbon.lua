@@ -64,13 +64,18 @@ end
 
 function keycodes.BACKSPACE()
   if state.pos.col > 0 then
-    local col = state.pos.col - 1
-    local char
+    local char, col
 
-    if col == 0 then
+    if state.pos.col == 1 then
+      local next_row = state.pos.row - 1
+      local next_line = state.lines[next_row]
+      col = next_line:len()
+      row = next_row
       char = state.brks[state.pos.row - 1]
     else
       local line = state.lines[state.pos.row]
+      col = state.pos.col - 1
+      row = state.pos.row
       char = line:sub(col, col)
     end
 
@@ -78,7 +83,7 @@ function keycodes.BACKSPACE()
       type = "delete",
       char = char,
       pos = {
-        row = state.pos.row,
+        row = row,
         col = col
       }
     }

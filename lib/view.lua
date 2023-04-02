@@ -57,8 +57,6 @@ function cursor_clock()
       blink_cursor()
     end
 
-    -- TODO screen_dirty
-    redraw()
     clock.sleep(0.5)
   end
 end

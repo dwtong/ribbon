@@ -20,7 +20,11 @@ local undoable_actions = {
   newline = true
 }
 
-local rewrap_lines, move_pos
+local rewrap_lines, move_pos, call_event_listeners
+
+local event_listeners = {
+  onchange = {}
+}
 
 local state = {
   lines = { "" },
@@ -48,6 +52,8 @@ function Store.exec(action)
     table.insert(history.past, action)
     history.future = {}
   end
+
+  call_event_listeners("onchange")
 end
 
 function Store.redo()
@@ -57,6 +63,8 @@ function Store.redo()
     applies[action.type](action)
     table.insert(history.past, action)
   end
+
+  call_event_listeners("onchange")
 end
 
 function Store.undo()
@@ -66,6 +74,12 @@ function Store.undo()
     reverts[action.type](action)
     table.insert(history.future, action)
   end
+
+  call_event_listeners("onchange")
+end
+
+function Store.add_event_listener(event, callback)
+  table.insert(event_listeners[event], callback)
 end
 
 function applies.insert(action)
@@ -192,6 +206,12 @@ function move_pos(col, row)
     state.screen.top_row = top_row + 1
   elseif next_row < top_row and top_row > 1 then
     state.screen.top_row = top_row - 1
+  end
+end
+
+function call_event_listeners(event_type)
+  for _, callback in ipairs(event_listeners[event_type]) do
+    callback()
   end
 end
 

@@ -11,7 +11,10 @@ Ribbon.undo = store.undo
 Ribbon.redo = store.redo
 Ribbon.keybinds = {}
 
+
 function Ribbon.init()
+  local redraw_callback = function() redraw() end
+  store.add_event_listener("onchange", redraw_callback)
   view.init()
 end
 
@@ -30,7 +33,6 @@ function Ribbon.keycode(key, value)
 
   if value == 1 and keycodes[key] then
     keycodes[key](value)
-    redraw()
   end
 end
 
@@ -48,8 +50,6 @@ function Ribbon.keychar(char)
       }
     }
   end
-
-  redraw()
 end
 
 function keycodes.ENTER()
@@ -59,7 +59,6 @@ function keycodes.ENTER()
       row = state.pos.row
     }
   }
-  redraw()
 end
 
 function keycodes.BACKSPACE()
@@ -82,8 +81,6 @@ function keycodes.BACKSPACE()
         col = col
       }
     }
-
-    redraw()
   end
 end
 

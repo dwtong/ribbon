@@ -56,7 +56,8 @@ function keycodes.ENTER()
   store.exec {
     type = "newline",
     pos = {
-      row = state.pos.row
+      row = state.pos.row,
+      col = state.pos.col
     }
   }
 end

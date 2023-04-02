@@ -121,21 +121,33 @@ function reverts.delete(action)
 end
 
 function applies.newline(action)
-  table.insert(state.lines, action.pos.row + 1, "")
+  local old_line = state.lines[action.pos.row]
+  local split_at = action.pos.col - 1
+  local line_start = old_line:sub(1, split_at)
+  local line_end = old_line:sub(split_at + 1)
+  local next_row = action.pos.row + 1
+
+  state.lines[action.pos.row] = line_start
+  table.insert(state.lines, next_row, line_end)
   table.insert(state.brks, action.pos.row, text.LINE_BREAK)
 
+  jump_to_pos(1, next_row)
   rewrap_lines()
-  move_pos(0, 1)
 end
 
 function reverts.newline(action)
-  local line = state.lines[action.pos.row - 1]
+  local line_start = state.lines[action.pos.row - 1]
+  local line_end = state.lines[action.pos.row]
+  local next_col = line_start:len() + 1
+  local next_row = action.pos.row - 1
+
+  state.lines[next_row] = line_start .. line_end
 
   table.remove(state.lines, action.pos.row)
-  table.remove(state.brks, action.pos.row - 1)
+  table.remove(state.brks, next_row)
 
+  jump_to_pos(next_col, next_row)
   rewrap_lines()
-  move_pos(line:len(), -1)
 end
 
 function applies.navigate(action)
@@ -168,6 +180,11 @@ function rewrap_lines()
     state.lines = next_lines
     state.brks = next_brks
   end
+end
+
+function jump_to_pos(col, row)
+  state.pos.col = col
+  state.pos.row = row
 end
 
 function move_pos(col, row)

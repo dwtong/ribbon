@@ -63,28 +63,31 @@ function keycodes.ENTER()
 end
 
 function keycodes.BACKSPACE()
-  if state.pos.col > 0 then
-    local char, col
+  local col = state.pos.col
+  local row = state.pos.row
 
-    if state.pos.col == 1 then
-      local next_row = state.pos.row - 1
+  if col > 1 or (col == 1 and row > 1) then
+    local char, new_col, new_row
+
+    if col == 1 and row > 1 then
+      local next_row = row - 1
       local next_line = state.lines[next_row]
-      col = next_line:len()
-      row = next_row
-      char = state.brks[state.pos.row - 1]
+      new_col = next_line:len()
+      new_row = next_row
+      char = state.brks[next_row]
     else
-      local line = state.lines[state.pos.row]
-      col = state.pos.col - 1
-      row = state.pos.row
-      char = line:sub(col, col)
+      local line = state.lines[row]
+      new_col = col - 1
+      new_row = state.pos.row
+      char = line:sub(new_col, new_col)
     end
 
     store.exec {
       type = "delete",
       char = char,
       pos = {
-        row = row,
-        col = col
+        row = new_row,
+        col = new_col
       }
     }
   end

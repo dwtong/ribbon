@@ -7,56 +7,55 @@ local WRAP_BREAK = "WRAP_BREAK"
 Text.LINE_BREAK = LINE_BREAK
 Text.WRAP_BREAK = WRAP_BREAK
 
-function Text.trim(str)
-  return str:gsub("^%s+", ""):gsub("%s$", "")
+function Text.trim(text)
+  return text:gsub("^%s+", ""):gsub("%s$", "")
 end
 
-function Text.splice(str, new_str, index)
-  return str:sub(1, index - 1) .. new_str .. str:sub(index)
+function Text.splice(text, new_text, index)
+  return text:sub(1, index - 1) .. new_text .. text:sub(index)
 end
 
-function Text.remove(str, index)
-  return str:sub(1, index - 1) .. str:sub(index + 1)
+function Text.remove(text, index)
+  return text:sub(1, index - 1) .. text:sub(index + 1)
 end
 
-function Text.last_space_index(str)
-  if str:find("%s") == nil then
+function Text.last_space_index(text)
+  if text:find("%s") == nil then
     return nil
   else
-    return str:len() - str:reverse():find("%s") + 1
+    return text:len() - text:reverse():find("%s") + 1
   end
 end
 
-function Text.width(str)
+function Text.width(text)
   local space_px = 4
-  local text_width_px = screen.text_extents(str)
+  local text_width_px = screen.text_extents(text)
 
   if text_width_px > 0 then
-    local leading_str = str:match("^%s+")
-    local leading_spaces = leading_str and leading_str:len() or 0
-    local trailing_str = str:match("%s+$")
-    local trailing_spaces = trailing_str and trailing_str:len() or 0
+    local leading_text = text:match("^%s+")
+    local leading_spaces = leading_text and leading_text:len() or 0
+    local trailing_text = text:match("%s+$")
+    local trailing_spaces = trailing_text and trailing_text:len() or 0
     local padded_space_px = space_px * (leading_spaces + trailing_spaces)
 
     return text_width_px + padded_space_px
   else
-    local space_count = str:len()
+    local space_count = text:len()
     return space_px * space_count
   end
 end
 
-function Text.split_on_line_wrap(str, target_width)
-  if Text.width(str) <= target_width then
-    return { str }
+function Text.split_on_line_wrap(text, target_width)
+  if Text.width(text) <= target_width then
+    return { text }
   else
-    local head = str
+    local head = text
     local split_at, target
 
     repeat
       split_at = head:len() - 1
-      -- local space_string = head:sub(1, split_at - 1)
-      local space_string = head:sub(1, split_at)
-      local space_index = Text.last_space_index(space_string)
+      local substring_with_space = head:sub(1, split_at)
+      local space_index = Text.last_space_index(substring_with_space)
 
       if space_index then
         target = target_width + Text.width(" ")
@@ -68,7 +67,7 @@ function Text.split_on_line_wrap(str, target_width)
       head = head:sub(1, split_at)
     until Text.width(head) <= target
 
-    local tail = str:sub(split_at + 1)
+    local tail = text:sub(split_at + 1)
     local splits = { head }
     local tail_splits = Text.split_on_line_wrap(tail, target_width)
 

@@ -95,28 +95,23 @@ end
 
 function keycodes.UP()
   local next_line = state.lines[state.pos.row - 1]
+  local row, col
 
   if next_line then
-    local col = next_line:len() - state.pos.col + 1
-
-    store.exec({
-      type = "navigate",
-      pos = {
-        row = -1,
-        col = col
-      }
-    })
+    col = next_line:len() - state.pos.col + 1
+    row = -1
   elseif state.pos.col > 1 then
-    local col = -state.pos.col + 1
-
-    store.exec({
-      type = "navigate",
-      pos = {
-        row = 0,
-        col = col
-      }
-    })
+    col = -state.pos.col + 1
+    row = 0
   end
+
+  store.exec({
+    type = "navigate",
+    pos = {
+      row = row,
+      col = col
+    }
+  })
 end
 
 function keycodes.DOWN()

@@ -1,11 +1,14 @@
 local View = {}
 
-store = include "ribbon/lib/store"
+local text = include "ribbon/lib/text"
 
-local state = store.state
+local store, state
 local unfreeze_cursor, blink_cursor, cursor_clock
 
-function View.init()
+function View.init(config)
+  store = config.store
+  state = config.store.state
+
   clock.run(cursor_clock)
 end
 

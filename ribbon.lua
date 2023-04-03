@@ -5,7 +5,7 @@
 keyboard = require "core/keyboard"
 ribbon = include "lib/ribbon"
 
-ribbon.keybinds = {
+ribbon.keybindings = {
   CTRL_Z = function() ribbon.undo() end,
   CTRL_X = function() ribbon.redo() end
 }

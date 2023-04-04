@@ -173,14 +173,11 @@ end
 function rewrap_lines()
   local lines = state.lines
   local brks = state.brks
-  local line = lines[state.pos.row]
 
-  if line and text.width(line) > SCREEN_WIDTH then
-    local next_lines, next_brks = text.rewrap_lines(lines, brks, SCREEN_WIDTH)
+  local next_lines, next_brks = text.rewrap_lines(lines, brks, SCREEN_WIDTH)
 
-    state.lines = next_lines
-    state.brks = next_brks
-  end
+  state.lines = next_lines
+  state.brks = next_brks
 end
 
 function jump_to_pos(col, row)

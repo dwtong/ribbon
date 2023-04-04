@@ -1,19 +1,17 @@
 local Ribbon = {}
 
-local key = include "ribbon/lib/key"
-local store = include "ribbon/lib/store"
-local view = include "ribbon/lib/view"
+local key = include "lib/key"
+local store = include "lib/store"
+local view = include "lib/view"
 
 Ribbon.undo = store.undo
 Ribbon.redo = store.redo
 Ribbon.keybindings = {}
 
 function Ribbon.init()
-  local redraw_callback = function() redraw() end
-
+  store.init()
   view.init({ store = store })
   key.init({ store = store, bindings = Ribbon.keybindings })
-  store.add_event_listener("onchange", redraw_callback)
 end
 
 function Ribbon.redraw()

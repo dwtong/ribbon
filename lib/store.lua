@@ -46,6 +46,19 @@ local state = {
 
 Store.state = state
 
+function Store.init(attrs)
+  local redraw_callback = function() redraw() end
+  Store.add_event_listener("onchange", redraw_callback)
+
+  state.lines = attrs and attrs.lines or { "" }
+  state.brks = attrs and attrs.brks or {}
+  state.row = 1
+  state.col = 1
+  state.screen.top_row = 1
+
+  rewrap_lines()
+end
+
 function Store.exec(action)
   applies[action.type](action)
 

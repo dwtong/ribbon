@@ -125,4 +125,36 @@ function Text.rewrap_lines(lines, brks, target_width)
   return next_lines, next_brks
 end
 
+function Text.save_to_file(file_path, wrapped_lines, brks)
+  local lines = Text.unwrap_lines(wrapped_lines, brks)
+  local text_file = io.open(file_path, "w")
+
+  if text_file then
+    for _, line in ipairs(lines) do
+      text_file:write(line .. "\n")
+    end
+
+    text_file:close()
+    print("Saved to " .. file_path)
+  else
+    print("Failed to save " .. file_path)
+  end
+end
+
+function Text.load_from_file(file_path)
+  local lines = {}
+  local brks = {}
+
+  for line in io.lines(file_path) do
+    lines[#lines + 1] = line
+    brks[#brks + 1] = LINE_BREAK
+  end
+
+  if lines == {} then
+    print("Failed to load " .. file_path)
+  end
+
+  return lines, brks
+end
+
 return Text

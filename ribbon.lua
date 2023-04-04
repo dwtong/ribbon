@@ -20,8 +20,12 @@ function redraw()
 end
 
 function key(k, v)
-  if v == 1 and k == 2 then
-    reload()
+  if v == 1 then
+    if k == 2 then
+      reload()
+    elseif k == 3 then
+      ribbon.load_file "/home/we/dust/code/ribbon/test.txt"
+    end
   end
 end
 

@@ -2,6 +2,7 @@
 --
 -- a simple text editor
 
+fileselect = require "fileselect"
 keyboard = require "core/keyboard"
 ribbon = include "lib/ribbon"
 
@@ -10,13 +11,18 @@ ribbon.keybindings = {
   CTRL_X = function() ribbon.redo() end
 }
 
+local selecting_file = false
+
 function init()
   ribbon.init()
+  ribbon.init_params()
   redraw()
 end
 
 function redraw()
-  ribbon.redraw()
+  if not selecting_file then
+    ribbon.redraw()
+  end
 end
 
 function key(k, v)
@@ -24,7 +30,7 @@ function key(k, v)
     if k == 2 then
       reload()
     elseif k == 3 then
-      ribbon.load_file "/home/we/dust/code/ribbon/test.txt"
+      open_file()
     end
   end
 end
@@ -40,4 +46,15 @@ end
 function reload()
   norns.script.load(norns.state.script)
   screen.ping()
+end
+
+function open_file()
+  selecting_file = true
+
+  fileselect.enter(_path.data .. "ribbon/", function(file)
+    if file ~= "cancel" then
+      ribbon.load_file(file)
+    end
+    selecting_file = false
+  end)
 end

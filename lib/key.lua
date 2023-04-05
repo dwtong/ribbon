@@ -2,8 +2,12 @@ local Key = {}
 
 local keyboard = require "core/keyboard"
 
+local KEY_REPEAT_INIT_MS = 150
+local KEY_REPEAT_MS = 75
+
 local keycodes = {}
 local store, state, bindings
+local key_repeat, cancel_key_repeat
 
 function Key.init(config)
   store = config.store
@@ -12,8 +16,14 @@ function Key.init(config)
 end
 
 function Key.code(key, value)
-  if value == 1 and keycodes[key] then
-    keycodes[key](store, value)
+  if keycodes[key] then
+    if value == 1 then
+      keycodes[key]()
+    elseif value == 2 then
+      key_repeat(key, keycodes[key])
+    else
+      cancel_key_repeat(key)
+    end
   end
 end
 
@@ -132,6 +142,29 @@ function keycodes.RIGHT()
       row = 0,
       col = 1,
     }
+  })
+end
+
+function key_repeat(key, callback)
+  local fn = function()
+    clock.sleep(KEY_REPEAT_INIT_MS / 1000)
+    while true do
+      callback()
+      clock.sleep(KEY_REPEAT_MS / 1000)
+    end
+  end
+
+  store.exec({
+    type = "runclock",
+    fn = fn,
+    clock_id = key
+  })
+end
+
+function cancel_key_repeat(key)
+  store.exec({
+    type = "cancelclock",
+    clock_id = key
   })
 end
 

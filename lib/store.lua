@@ -28,6 +28,7 @@ local event_listeners = {
 }
 
 local state = {
+  clocks = {},
   lines = { "" },
   brks = {},
   pos = {
@@ -181,6 +182,22 @@ end
 
 function applies.unfreezecursor()
   state.cursor.freeze = false
+end
+
+function applies.runclock(action)
+  if state.clocks[action.clock_id] == nil then
+    local clk = clock.run(action.fn)
+    state.clocks[action.clock_id] = clk
+  end
+end
+
+function applies.cancelclock(action)
+  local clk = state.clocks[action.clock_id]
+
+  if clk then
+    clock.cancel(clk)
+    state.clocks[action.clock_id] = nil
+  end
 end
 
 function rewrap_lines()

@@ -6,10 +6,11 @@ fileselect = require "fileselect"
 keyboard = require "core/keyboard"
 ribbon = include "lib/ribbon"
 
-ribbon.keybindings = {
-  CTRL_Z = function() ribbon.undo() end,
-  CTRL_X = function() ribbon.redo() end
-}
+-- TODO: fix undo/redo
+-- ribbon.keybindings = {
+--   CTRL_Z = function() ribbon.undo() end,
+--   CTRL_X = function() ribbon.redo() end
+-- }
 
 local selecting_file = false
 

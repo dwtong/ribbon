@@ -243,6 +243,10 @@ function move_pos(col, row)
     next_col = next_line:len() + 1
   end
 
+  if next_col < 1 then
+    next_col = 1
+  end
+
   state.pos.row = next_row
   state.pos.col = next_col
 

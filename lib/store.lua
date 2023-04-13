@@ -307,6 +307,6 @@ function group_past_actions()
   })
 end
 
-debounced_group_past_actions = fn.debounce(group_past_actions, 2)
+debounced_group_past_actions = fn.debounce(group_past_actions, 2000)
 
 return Store

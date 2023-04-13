@@ -1,7 +1,8 @@
 local Fn = {}
 
-function Fn.debounce(callback, timeout_seconds)
+function Fn.debounce(callback, timeout_ms)
   local debounce_clock
+  local timeout_seconds = timeout_ms / 1000
 
   return function(...)
     local args = ...

@@ -1,4 +1,5 @@
 local text = include "ribbon/lib/text"
+local fn = include "ribbon/lib/fn"
 
 local SCREEN_WIDTH = 124
 local LINE_COUNT = 6
@@ -60,11 +61,15 @@ function Store.init(attrs)
   rewrap_lines()
 end
 
+
+local debounced_group_past_actions
+
 function Store.exec(action)
   applies[action.type](action)
 
   if undoable_actions[action.type] then
     table.insert(history.past, action)
+    debounced_group_past_actions()
     history.future = {}
   end
 
@@ -200,6 +205,19 @@ function applies.cancelclock(action)
   end
 end
 
+function applies.group(action)
+  for _, action in ipairs(action.actions) do
+    applies[action.type](action)
+  end
+end
+
+function reverts.group(action)
+  for index = #action.actions, 1, -1 do
+    local action = action.actions[index]
+    reverts[action.type](action)
+  end
+end
+
 function rewrap_lines()
   local lines = state.lines
   local brks = state.brks
@@ -271,5 +289,24 @@ function call_event_listeners(event_type)
     callback()
   end
 end
+
+function group_past_actions()
+  local groupable_actions = {}
+  for index = #history.past, 1, -1 do
+    local action = table.remove(history.past)
+    if action.type == 'group' then
+      table.insert(history.past, action)
+      break
+    end
+    table.insert(groupable_actions, 1, action)
+  end
+
+  table.insert(history.past, {
+    type = 'group',
+    actions = groupable_actions,
+  })
+end
+
+debounced_group_past_actions = fn.debounce(group_past_actions, 2)
 
 return Store

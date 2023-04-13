@@ -205,15 +205,15 @@ function applies.cancelclock(action)
   end
 end
 
-function applies.group(action)
-  for _, action in ipairs(action.actions) do
+function applies.group(group_action)
+  for _, action in ipairs(group_action.actions) do
     applies[action.type](action)
   end
 end
 
-function reverts.group(action)
-  for index = #action.actions, 1, -1 do
-    local action = action.actions[index]
+function reverts.group(group_action)
+  for index = #group_action.actions, 1, -1 do
+    local action = group_action.actions[index]
     reverts[action.type](action)
   end
 end
@@ -292,9 +292,9 @@ end
 
 function group_past_actions()
   local groupable_actions = {}
-  for index = #history.past, 1, -1 do
+  for _ = #history.past, 1, -1 do
     local action = table.remove(history.past)
-    if action.type == 'group' then
+    if action.type == "group" then
       table.insert(history.past, action)
       break
     end
@@ -302,7 +302,7 @@ function group_past_actions()
   end
 
   table.insert(history.past, {
-    type = 'group',
+    type = "group",
     actions = groupable_actions,
   })
 end

@@ -80,21 +80,21 @@ function Text.split_on_line_wrap(text, target_width)
 end
 
 function Text.unwrap_lines(lines, brks)
-  local next_lines = {}
+  local unwrapped_lines = {}
 
   for line_index = 1, #lines do
     local line = lines[line_index]
     local prev_brk = brks[line_index - 1]
     if prev_brk == nil then
-      table.insert(next_lines, line)
+      table.insert(unwrapped_lines, line)
     elseif prev_brk == LINE_BREAK then
-      table.insert(next_lines, line)
+      table.insert(unwrapped_lines, line)
     elseif prev_brk == WRAP_BREAK then
-      next_lines[#next_lines] = next_lines[#next_lines] .. line
+      unwrapped_lines[#unwrapped_lines] = unwrapped_lines[#unwrapped_lines] .. line
     end
   end
 
-  return next_lines
+  return unwrapped_lines
 end
 
 function Text.wrap_lines(lines, target_width)
@@ -121,7 +121,7 @@ end
 
 function Text.rewrap_lines(lines, brks, target_width)
   local unwrapped_lines = Text.unwrap_lines(lines, brks)
-  next_lines, next_brks = Text.wrap_lines(unwrapped_lines, target_width)
+  local next_lines, next_brks = Text.wrap_lines(unwrapped_lines, target_width)
   return next_lines, next_brks
 end
 

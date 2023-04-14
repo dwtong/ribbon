@@ -1,6 +1,7 @@
 local Key = {}
 
 local keyboard = require "core/keyboard"
+local view = include "ribbon/lib/view"
 
 local KEY_REPEAT_INIT_MS = 150
 local KEY_REPEAT_MS = 75

@@ -9,7 +9,7 @@ function View.init(config)
   store = config.store
   state = config.store.state
 
-  clock.run(cursor_clock)
+  -- clock.run(cursor_clock)
 end
 
 function View.draw_lines()

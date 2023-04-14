@@ -52,6 +52,8 @@ function Store.init(attrs)
   local redraw_callback = function() redraw() end
   Store.add_event_listener("onchange", redraw_callback)
 
+  Store.add_event_listener("onchange", print_state)
+
   state.lines = attrs and attrs.lines or { "" }
   state.brks = attrs and attrs.brks or {}
   state.row = 1
@@ -64,11 +66,14 @@ end
 local debounced_group_past_actions
 
 function Store.exec(action)
+  print "exec"
+  print_action(action)
+  
   applies[action.type](action)
 
   if undoable_actions[action.type] then
     table.insert(history.past, action)
-    debounced_group_past_actions()
+    -- debounced_group_past_actions()
     history.future = {}
   end
 
@@ -77,6 +82,9 @@ end
 
 function Store.redo()
   local action = table.remove(history.future)
+
+  print "redo"
+  print_action(action)
 
   if action then
     applies[action.type](action)
@@ -88,6 +96,9 @@ end
 
 function Store.undo()
   local action = table.remove(history.past)
+
+  print "undo"
+  print_action(action)
 
   if action then
     reverts[action.type](action)
@@ -116,23 +127,52 @@ function applies.insert(action)
   move_col(1 + wrap_pos_move)
 end
 
+
+--- if action is about line above current line
+--- then we need to combine the current line with the above line (as they were before the wrap)
+--- then remove the thing, then rewrap
+
 function reverts.insert(action)
-  local line = state.lines[action.pos.row]
-  local new_line = text.remove(line, action.pos.col)
+  if state.pos.row > action.pos.row then
+    unwrap_line(action.pos.row)
 
-  state.lines[action.pos.row] = new_line
-  state.pos.col = action.pos.col + 1
-  state.pos.row = action.pos.row
+    local line = state.lines[action.pos.row]
+    local new_line = text.remove(line, action.pos.col)
+  
+    state.lines[action.pos.row] = new_line
+    state.pos.col = action.pos.col + 1
+    state.pos.row = action.pos.row
 
-  if action.pos.row > 1 then
-    local row_prev_length = state.lines[action.pos.row - 1]:len()
+    local row_prev_length = state.lines[action.pos.row]:len()
     rewrap_lines()
-    local row_next_length = state.lines[action.pos.row - 1]:len()
+    local row_next_length = state.lines[action.pos.row]:len()
     local row_length_diff = row_prev_length - row_next_length
+    -- print("row prev length", row_prev_length)
+    -- print("row next length", row_next_length)
+    -- print("row diff length", row_length_diff)
+    -- print("state.pos.row", state.pos.row)
+    -- print("state.pos.col", state.pos.col)
     move_col(-1 + row_length_diff)
+    -- print("state.pos.row", state.pos.row)
+    -- print("state.pos.col", state.pos.col)
   else
-    rewrap_lines()
-    move_col(-1)
+    local line = state.lines[action.pos.row]
+    local new_line = text.remove(line, action.pos.col)
+  
+    state.lines[action.pos.row] = new_line
+    state.pos.col = action.pos.col + 1
+    state.pos.row = action.pos.row
+  
+    if action.pos.row > 1 then
+      local row_prev_length = state.lines[action.pos.row - 1]:len()
+      rewrap_lines()
+      local row_next_length = state.lines[action.pos.row - 1]:len()
+      local row_length_diff = row_prev_length - row_next_length
+      move_col(-1 + row_length_diff)
+    else
+      rewrap_lines()
+      move_col(-1)
+    end
   end
 end
 
@@ -231,6 +271,41 @@ function reverts.group(group_action)
   end
 end
 
+function unwrap_line(row)
+  local next_lines = {}
+  local next_brks = {}
+
+  if row > 1 then
+    for i = 1, row - 1 do
+      local line = state.lines[i]
+      local brk = state.brks[i]
+      table.insert(next_lines, line)
+      table.insert(next_brks, brk)
+    end
+  end
+
+  local j = row
+  local line = state.lines[j]
+  while j < #state.lines and state.brks[j] == text.WRAP_BREAK do
+    line = line .. state.lines[j + 1]
+    j = j + 1
+  end
+  table.insert(next_lines, line)
+  table.insert(next_brks, state.brks[j])
+
+  if j < #state.lines then
+    for k = j + 1, #state.lines do
+      local line = state.lines[k]
+      local brk = state.brks[k]
+      table.insert(next_lines, line)
+      table.insert(next_brks, brk)
+    end
+  end
+
+  state.lines = next_lines
+  state.brks = next_brks
+end
+
 function rewrap_lines()
   local lines = state.lines
   local brks = state.brks
@@ -262,11 +337,11 @@ function move_col(col)
   if current_row > num_rows then
     state.pos.row = num_rows
     state.pos.col = state.lines[num_rows]:len() + 1
-  
+
     set_visible_rows()
     return
   end
-  
+
   local next_col = current_col + col
   local next_row = current_row
   local next_line = state.lines[next_row]
@@ -296,7 +371,7 @@ function move_col(col)
   -- print("next_line", next_line)
 
   -- print("---")
-  
+
   -- if next_col > next_line:len() + 1 then
   --   next_col = next_line:len() + 1
   -- end
@@ -353,6 +428,32 @@ function group_past_actions()
     type = "group",
     actions = groupable_actions,
   })
+end
+
+function print_action(action)
+  print "action"
+  if action.type == "insert"
+    or action.type == "delete"
+  then
+    print("type", action.type)
+    print("pos.col", action.pos.col)
+    print("pos.row", action.pos.row)
+    print("char", action.char)
+  else
+    tab.print(action)
+  end
+  print "---"
+end
+
+function print_state()
+  print "state"
+  print("pos.col", state.pos.col)
+  print("pos.row", state.pos.row)
+  print("lines")
+  tab.print(state.lines)
+  print("brks")
+  tab.print(state.brks)
+  print "---"
 end
 
 debounced_group_past_actions = fn.debounce(group_past_actions, 2000)
